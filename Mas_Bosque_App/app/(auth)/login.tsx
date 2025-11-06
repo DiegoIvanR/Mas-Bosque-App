@@ -16,6 +16,12 @@ export default function LoginScreen() {
           router.replace("/"); // Go to tab navigator
         }}
       />
+      <Button
+        title="SignUp"
+        onPress={() => {
+          router.replace("/signup"); // Go to tab navigator
+        }}
+      />
     </View>
   );
 }
