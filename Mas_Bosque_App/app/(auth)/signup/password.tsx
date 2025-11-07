@@ -12,6 +12,7 @@ import InputBar from "@/components/InputBar";
 import Button from "@/components/Button";
 import { router } from "expo-router";
 import { useSignup } from "./SignUpContext"; // Fixed typo: was SignUpContext
+import GoBackButton from "@/components/GoBackButton"; // 1. Import the button
 
 export default function SignupPassword() {
   // 1. Get the global state and setter
@@ -51,6 +52,11 @@ export default function SignupPassword() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      {/* 2. Add the button here */}
+      <View style={styles.header}>
+        <GoBackButton />
+      </View>
+
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -75,11 +81,13 @@ export default function SignupPassword() {
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
           </View>
 
-          {/* 7. Update button to show loading state */}
-          <Button
-            value={loading ? "Creating Account..." : "Continue"}
-            onClick={handleClick}
-          />
+          {/* 7. Wrap the button in a full-width container */}
+          <View style={styles.buttonContainer}>
+            <Button
+              value={loading ? "Creating Account..." : "Continue"}
+              onClick={handleClick}
+            />
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -92,15 +100,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#00160B",
   },
+  // 3. Add a style for the header
+  header: {
+    width: "100%",
+    paddingLeft: 20,
+    paddingTop: 10,
+    zIndex: 10, // Ensure it's above the ScrollView
+  },
   keyboardAvoidingView: {
     flex: 1,
   },
   container: {
-    flexGrow: 0.5,
+    flexGrow: 0.5, // 4. FIX: Make style identical to index.tsx
     paddingHorizontal: 30,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "center", // 4. FIX: Make style identical to index.tsx
     gap: 35,
+    // Note: paddingTop: 80 is removed, justifyContent: "center" is back
   },
   text: {
     fontSize: 18,
@@ -114,6 +130,11 @@ const styles = StyleSheet.create({
     width: "100%", // Ensure it takes full width for alignment
     alignItems: "center", // Center InputBar
     gap: 8, // Space between input and error
+  },
+  // 8. ADD THIS STYLE
+  buttonContainer: {
+    width: "100%",
+    alignItems: "center",
   },
   errorText: {
     fontSize: 14,

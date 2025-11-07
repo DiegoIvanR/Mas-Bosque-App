@@ -7,10 +7,11 @@ import {
   ColorValue,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router"; // 1. Import router
 
 type GoBackButtonProps = {
-  /** The function to call when the button is pressed. */
-  onClick: () => void;
+  /** The function to call when the button is pressed. Defaults to router.back() */
+  onClick?: () => void;
   /** The background color of the circle. */
   backgroundColor?: ColorValue;
   /** The color of the arrow line. */
@@ -20,7 +21,7 @@ type GoBackButtonProps = {
 };
 
 const GoBackButton = ({
-  onClick,
+  onClick = () => router.back(), // 2. Set default to router.back()
   backgroundColor = "rgba(120, 120, 128, 0.32)",
   lineColor = "#AEAEB2",
   style,

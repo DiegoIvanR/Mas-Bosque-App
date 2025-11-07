@@ -13,13 +13,14 @@ import InputBar from "@/components/InputBar";
 import Button from "@/components/Button";
 import { router } from "expo-router";
 import { useSignup } from "./SignUpContext";
+import GoBackButton from "@/components/GoBackButton"; // 1. Import
 
 export default function SignupMedical() {
   const { signupData, setSignupData } = useSignup();
   const [error, setError] = useState("");
 
   const handleClick = () => {
-    router.push("/signup/emcontact");
+    router.push("/signup/emcontact"); // 2. Fix: use router.push
   };
   const handleBloodTypeChange = (bloodType: string) => {
     if (error) {
@@ -47,6 +48,11 @@ export default function SignupMedical() {
   };
   return (
     <SafeAreaView style={styles.safeArea}>
+      {/* 3. Add the button here */}
+      <View style={styles.header}>
+        <GoBackButton />
+      </View>
+
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -89,7 +95,9 @@ export default function SignupMedical() {
             />
           </View>
 
-          <Button value="Continue" onClick={handleClick} />
+          <View style={styles.buttonContainer}>
+            <Button value="Continue" onClick={handleClick} />
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -101,11 +109,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#00160B",
   },
+  // 4. Add header style
+  header: {
+    width: "100%",
+    paddingLeft: 20,
+    paddingTop: 10,
+    zIndex: 10,
+  },
   keyboardAvoidingView: {
     flex: 1,
   },
   container: {
-    flexGrow: 0.5, // ensures ScrollView content expands properly
+    flexGrow: 0.5, // 5. Fix: Make style identical to index.tsx
     paddingHorizontal: 30,
     alignItems: "center",
     justifyContent: "center",
@@ -122,7 +137,7 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "column",
     justifyContent: "space-between",
-    gap: "10",
+    gap: 10,
   },
   subText: {
     fontSize: 14,
@@ -130,5 +145,9 @@ const styles = StyleSheet.create({
     fontFamily: "SF Pro Rounded",
     color: "#fff",
     textAlign: "left",
+  },
+  buttonContainer: {
+    width: "100%",
+    alignItems: "center",
   },
 });
