@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, StyleSheet, TouchableOpacity, View, Pressable } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity, View, Pressable, Animated, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 interface SOSConfirmationProps {
@@ -27,6 +27,18 @@ export default function SOSConfirmation({
   const OPTION_ROW_HEIGHT = 48; // estimated row height (padding + text)
   const DROPDOWN_BOX_PADDING = 16; // padding inside the box
   const dropdownHeight = options.length * OPTION_ROW_HEIGHT + DROPDOWN_BOX_PADDING;
+
+  // Animated value for dropdown toggle (0 = closed, 1 = open)
+  const dropdownAnim = React.useRef(new Animated.Value(pickerVisible ? 1 : 0)).current;
+
+  React.useEffect(() => {
+    Animated.timing(dropdownAnim, {
+      toValue: pickerVisible ? 1 : 0,
+      duration: 220,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [pickerVisible, dropdownAnim]);
 
   const handleSend = () => {
     if (selectedEmergency) {
@@ -66,26 +78,35 @@ export default function SOSConfirmation({
 
       {/* Reserve fixed space for dropdown so layout doesn't shift or overlay */}
       <View style={[styles.dropdownSpacer, { height: dropdownHeight }]}> 
-        {/* Show the white dropdown box with options when open; otherwise render a transparent placeholder */}
-        {pickerVisible ? (
-          <View style={[styles.dropdownBox, { height: dropdownHeight }]}> 
-            {options.map((opt) => (
-              <TouchableOpacity
-                key={opt.value}
-                style={styles.dropdownOption}
-                onPress={() => {
-                  setSelectedEmergency(opt.value);
-                  onEmergencySelected(opt.value);
-                  setPickerVisible(false);
-                }}
-              >
-                <Text style={styles.dropdownOptionText}>{opt.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        ) : (
-          <View style={[styles.dropdownHidden, { height: dropdownHeight }]} />
-        )}
+        {/* Animated dropdown box: slides down from -height -> 0 and fades in */}
+        <Animated.View
+          style={[
+            styles.dropdownBox,
+            { height: dropdownHeight },
+            {
+              opacity: dropdownAnim,
+              transform: [
+                {
+                  translateY: dropdownAnim.interpolate({ inputRange: [0, 1], outputRange: [-dropdownHeight, 0] }),
+                },
+              ],
+            },
+          ]}
+        >
+          {options.map((opt) => (
+            <TouchableOpacity
+              key={opt.value}
+              style={styles.dropdownOption}
+              onPress={() => {
+                setSelectedEmergency(opt.value);
+                onEmergencySelected(opt.value);
+                setPickerVisible(false);
+              }}
+            >
+              <Text style={styles.dropdownOptionText}>{opt.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </Animated.View>
       </View>
 
       <TouchableOpacity
@@ -173,6 +194,7 @@ const styles = StyleSheet.create({
     marginBottom: GAP,
     alignItems: 'center',
     justifyContent: 'flex-start',
+    overflow: 'hidden',
   },
   sendButton: {
     backgroundColor: '#200101',
