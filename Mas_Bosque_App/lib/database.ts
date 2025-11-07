@@ -73,7 +73,11 @@ export const getLocalUserData = async (userId: string) => {
 // --- NEW FUNCTION ADDED ---
 // This function clears all data from the tables for logout
 export const clearLocalData = async () => {
-  await db.runAsync("DELETE FROM emergency_contacts");
-  await db.runAsync("DELETE FROM user_profile");
-  console.log("Local database cleared.");
+    try {
+        await db.runAsync("DROP TABLE IF EXISTS emergency_contacts");
+        await db.runAsync("DROP TABLE IF EXISTS user_profile");
+        console.log("Local database cleared.");
+    } catch (error) {
+        console.error("Error clearing local database:", error.message);
+    }
 };
