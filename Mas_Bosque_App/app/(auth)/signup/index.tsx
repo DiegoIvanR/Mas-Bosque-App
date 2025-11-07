@@ -23,6 +23,8 @@ export default function SignupEmail() {
   // 2. Add state for the error message
   const [error, setError] = useState("");
 
+  const validEmail = !emailRegex.test(signupData.email);
+
   const handleClick = () => {
     // 3. Validate the email
     if (!emailRegex.test(signupData.email)) {
@@ -65,13 +67,20 @@ export default function SignupEmail() {
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
           </View>
 
-          <Button value="Continue" onClick={handleClick} />
+          <View style={styles.buttonContainer}>
+            <Button
+              value="Continue"
+              onClick={handleClick}
+              disabled={validEmail}
+            />
+          </View>
+
           <View style={styles.textWrapper}>
             <Text style={styles.subtext}>Already have an account?</Text>
             <Text
               style={styles.signup}
               onPress={() => {
-                router.push("/(auth)/login");
+                router.push("/login"); // Fixed path
               }}
             >
               LogIn
@@ -93,7 +102,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    flexGrow: 0.5, // ensures ScrollView content expands properly
+    flexGrow: 0.5, // This is the "good" style
     paddingHorizontal: 30,
     alignItems: "center",
     justifyContent: "center",
@@ -111,6 +120,10 @@ const styles = StyleSheet.create({
     width: "100%", // Ensure it takes full width for alignment
     alignItems: "center", // Center InputBar
     gap: 8, // Space between input and error
+  },
+  buttonContainer: {
+    width: "100%",
+    alignItems: "center",
   },
   errorText: {
     fontSize: 14,

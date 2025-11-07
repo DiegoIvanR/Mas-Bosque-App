@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   StyleSheet,
-  Image,
   Text,
   KeyboardAvoidingView,
   Platform,
@@ -19,36 +18,33 @@ export default function SignupMedical() {
   const { signupData, setSignupData } = useSignup();
   const [error, setError] = useState("");
 
+  // 1. Validation for blood type
+  const isValid = signupData.bloodType.trim().length > 0;
+
   const handleClick = () => {
-    router.push("/signup/emcontact"); // 2. Fix: use router.push
+    if (!isValid) {
+      setError("Please enter your blood type.");
+    } else {
+      setError("");
+      router.push("/signup/emcontact");
+    }
   };
   const handleBloodTypeChange = (bloodType: string) => {
-    if (error) {
-      setError("");
-    }
+    if (error) setError("");
     setSignupData((prev) => ({ ...prev, bloodType }));
   };
   const handleAllergiesChange = (allergies: string) => {
-    if (error) {
-      setError("");
-    }
     setSignupData((prev) => ({ ...prev, allergies }));
   };
   const handleMedicalConditionsChange = (medicalConditions: string) => {
-    if (error) {
-      setError("");
-    }
     setSignupData((prev) => ({ ...prev, medicalConditions }));
   };
   const handleMedicationsChange = (medications: string) => {
-    if (error) {
-      setError("");
-    }
     setSignupData((prev) => ({ ...prev, medications }));
   };
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* 3. Add the button here */}
+      {/* 2. Add the button here */}
       <View style={styles.header}>
         <GoBackButton />
       </View>
@@ -68,6 +64,7 @@ export default function SignupMedical() {
             <InputBar
               value={signupData.bloodType}
               onChangeText={handleBloodTypeChange}
+              autoCapitalize="words"
             />
           </View>
 
@@ -76,6 +73,7 @@ export default function SignupMedical() {
             <InputBar
               value={signupData.allergies}
               onChangeText={handleAllergiesChange}
+              autoCapitalize="sentences"
             />
           </View>
 
@@ -84,6 +82,7 @@ export default function SignupMedical() {
             <InputBar
               value={signupData.medications}
               onChangeText={handleMedicationsChange}
+              autoCapitalize="sentences"
             />
           </View>
 
@@ -92,11 +91,18 @@ export default function SignupMedical() {
             <InputBar
               value={signupData.medicalConditions}
               onChangeText={handleMedicalConditionsChange}
+              autoCapitalize="sentences"
             />
           </View>
 
           <View style={styles.buttonContainer}>
-            <Button value="Continue" onClick={handleClick} />
+            {/* 3. Display error */}
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            <Button
+              value="Continue"
+              onClick={handleClick}
+              disabled={!isValid} // 4. Add disabled prop
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -109,7 +115,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#00160B",
   },
-  // 4. Add header style
+  // 3. Add header style
   header: {
     width: "100%",
     paddingLeft: 20,
@@ -120,7 +126,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    flexGrow: 0.5, // 5. Fix: Make style identical to index.tsx
+    flexGrow: 0.5, // 4. Fix: Make style identical to index.tsx
     paddingHorizontal: 30,
     alignItems: "center",
     justifyContent: "center",
@@ -149,5 +155,13 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: "100%",
     alignItems: "center",
+    gap: 8, // Space for error
+  },
+  // 5. Add error text style
+  errorText: {
+    fontSize: 14,
+    color: "#FF5A5A",
+    fontFamily: "Lato-Bold",
+    textAlign: "center",
   },
 });

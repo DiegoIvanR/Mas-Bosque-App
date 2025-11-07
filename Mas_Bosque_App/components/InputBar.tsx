@@ -8,6 +8,7 @@ import {
   Platform,
   Pressable, // Import Pressable for the icon button
   ColorValue,
+  KeyboardTypeOptions, // 1. Import the type for keyboardType
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -34,6 +35,7 @@ type InputBarProps = {
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
   cursorColor?: ColorValue;
   selectionColor?: ColorValue;
+  keyboardType?: KeyboardTypeOptions; // 2. Add keyboardType to props
 };
 
 const InputBar = ({
@@ -46,7 +48,8 @@ const InputBar = ({
   onToggleSecureEntry,
   autoCapitalize = "none",
   cursorColor = "#06D23C",
-  selectionColor = "#06D23C",
+  selectionColor = "rgba(52, 211, 153, 0.3)", // Using the semi-transparent green
+  keyboardType = "default", // 3. Add keyboardType here
 }: InputBarProps) => {
   return (
     // This is the main container. It grays out when disabled.
@@ -70,6 +73,7 @@ const InputBar = ({
           autoCapitalize={autoCapitalize} // Pass through
           cursorColor={cursorColor}
           selectionColor={selectionColor}
+          keyboardType={keyboardType} // 4. Pass the prop to TextInput
         />
       </View>
 
@@ -100,7 +104,8 @@ const styles = StyleSheet.create({
     paddingVertical: 11, // Use vertical padding
     flexDirection: "row", // Lays out children (frame, mic) horizontally
     alignItems: "center", // Centers children vertically
-    width: "auto",
+    width: "100%", // 5. --- I also fixed this from "auto" to "100%" ---
+    // This ensures your InputBar always fills its container
   },
   disabled: {
     backgroundColor: "#333", // Darker background when disabled

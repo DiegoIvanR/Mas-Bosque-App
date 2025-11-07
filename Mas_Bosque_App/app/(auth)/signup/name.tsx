@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   StyleSheet,
-  Image,
   Text,
   KeyboardAvoidingView,
   Platform,
@@ -19,24 +18,29 @@ export default function SignupName() {
   const { signupData, setSignupData } = useSignup();
   const [error, setError] = useState("");
 
+  // 1. Create validation constant
+  const isValid =
+    signupData.name.trim().length > 0 && signupData.lastName.trim().length > 0;
+
   const handleClick = () => {
-    router.push("/signup/medical"); // 2. Fix: use router.push
+    if (!isValid) {
+      setError("Please fill in both your name and last name.");
+    } else {
+      setError("");
+      router.push("/signup/medical");
+    }
   };
   const handleNameChange = (name: string) => {
-    if (error) {
-      setError("");
-    }
+    if (error) setError("");
     setSignupData((prev) => ({ ...prev, name }));
   };
   const handleLastNameChange = (lastName: string) => {
-    if (error) {
-      setError("");
-    }
+    if (error) setError("");
     setSignupData((prev) => ({ ...prev, lastName }));
   };
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* 3. Add the button here */}
+      {/* 2. Add the button here */}
       <View style={styles.header}>
         <GoBackButton />
       </View>
@@ -53,7 +57,11 @@ export default function SignupName() {
 
           <View style={styles.inputWrapper}>
             <Text style={styles.subText}>Name</Text>
-            <InputBar value={signupData.name} onChangeText={handleNameChange} />
+            <InputBar
+              value={signupData.name}
+              onChangeText={handleNameChange}
+              autoCapitalize="words"
+            />
           </View>
 
           <View style={styles.inputWrapper}>
@@ -61,11 +69,18 @@ export default function SignupName() {
             <InputBar
               value={signupData.lastName}
               onChangeText={handleLastNameChange}
+              autoCapitalize="words"
             />
           </View>
 
           <View style={styles.buttonContainer}>
-            <Button value="Continue" onClick={handleClick} />
+            {/* 3. Display error */}
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            <Button
+              value="Continue"
+              onClick={handleClick}
+              disabled={!isValid} // 4. Add disabled prop
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -78,7 +93,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#00160B",
   },
-  // 4. Add header style
+  // 3. Add header style
   header: {
     width: "100%",
     paddingLeft: 20,
@@ -89,7 +104,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    flexGrow: 0.5, // 5. Fix: Make style identical to index.tsx
+    flexGrow: 0.5, // 4. Fix: Make style identical to index.tsx
     paddingHorizontal: 30,
     alignItems: "center",
     justifyContent: "center",
@@ -118,5 +133,14 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: "100%",
     alignItems: "center",
+    marginTop: 20, // Add some space above button
+    gap: 8, // Space for error message
+  },
+  // 5. Add error text style
+  errorText: {
+    fontSize: 14,
+    color: "#FF5A5A",
+    fontFamily: "Lato-Bold",
+    textAlign: "center",
   },
 });
