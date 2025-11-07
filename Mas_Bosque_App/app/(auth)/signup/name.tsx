@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState } from "react";
 import {
   View,
   StyleSheet,
@@ -12,13 +12,26 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import InputBar from "@/components/InputBar";
 import Button from "@/components/Button";
 import { router } from "expo-router";
+import { useSignup } from "./SignUpContext";
 
 export default function SignupName() {
-  const [name, setName] = React.useState("");
-  const [lastName, setLastName] = React.useState("");
+  const { signupData, setSignupData } = useSignup();
+  const [error, setError] = useState("");
 
   const handleClick = () => {
     router.replace("/signup/medical");
+  };
+  const handleNameChange = (name: string) => {
+    if (error) {
+      setError("");
+    }
+    setSignupData((prev) => ({ ...prev, name }));
+  };
+  const handleLastNameChange = (lastName: string) => {
+    if (error) {
+      setError("");
+    }
+    setSignupData((prev) => ({ ...prev, lastName }));
   };
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -34,12 +47,15 @@ export default function SignupName() {
 
           <View style={styles.inputWrapper}>
             <Text style={styles.subText}>Name</Text>
-            <InputBar value={name} onChangeText={setName} />
+            <InputBar value={signupData.name} onChangeText={handleNameChange} />
           </View>
 
           <View style={styles.inputWrapper}>
             <Text style={styles.subText}>Last Name</Text>
-            <InputBar value={lastName} onChangeText={setLastName} />
+            <InputBar
+              value={signupData.lastName}
+              onChangeText={handleLastNameChange}
+            />
           </View>
 
           <Button value="Continue" onClick={handleClick} />

@@ -21,34 +21,25 @@ export default function SignupPassword() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleClick = async () => {
+  // --- 1. ADD THIS STATE ---
+  // This state will track if the password text is hidden or not
+  const [isPasswordSecure, setIsPasswordSecure] = useState(true);
+
+  // --- 2. ADD THIS FUNCTION ---
+  // This is the callback function we will pass to the InputBar
+  const toggleSecureEntry = () => {
+    setIsPasswordSecure((previousState) => !previousState);
+  };
+
+  const handleClick = () => {
     // 3. Validate the password (e.g., minimum 6 characters)
     if (signupData.password.length < 6) {
       setError("Password must be at least 6 characters long.");
-      return; // Stop if invalid
-    }
-
-    setLoading(true); // Start loading
-    setError(""); // Clear previous errors
-
-    // 4. Call Supabase auth.signUp with data from context
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email: signupData.email,
-      password: signupData.password,
-    });
-
-    if (signUpError) {
-      // 5. Handle any errors from Supabase
-      setError(signUpError.message);
-    } else if (data.user) {
+    } else {
       // 6. Success! User is created. Navigate to the next step.
       // (This runs even if email confirmation is required)
       router.replace("/signup/name");
-    } else {
-      setError("An unexpected error occurred. Please try again.");
     }
-
-    setLoading(false); // Stop loading
   };
 
   const handlePasswordChange = (password: string) => {
@@ -76,7 +67,10 @@ export default function SignupPassword() {
             <InputBar
               value={signupData.password} // Read password from global state
               onChangeText={handlePasswordChange} // Use new handler
-              // You might want to add secureTextEntry={true} to your InputBar component
+              placeholder="Password" // Add placeholder text
+              // --- 3. ADD THESE PROPS ---
+              secureTextEntry={isPasswordSecure} // Pass the state
+              onToggleSecureEntry={toggleSecureEntry} // Pass the function
             />
             {/* 4. Display the error message */}
             {error ? <Text style={styles.errorText}>{error}</Text> : null}

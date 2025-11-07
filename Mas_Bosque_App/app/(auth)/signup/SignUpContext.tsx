@@ -4,7 +4,18 @@ import React, { createContext, useState, useContext } from "react";
 export type SignupData = {
   email: string;
   password: string;
-  name: string; // Added this for the /signup/name screen
+  name: string;
+  lastName: string;
+
+  bloodType: string;
+  allergies: string;
+  medicalConditions: string;
+  medications: string;
+
+  contactName: string;
+  contactLastName: string;
+  contactPhone: string;
+  contactRelationship: string;
 };
 
 // 2. Define the context type

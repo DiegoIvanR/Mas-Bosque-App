@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState } from "react";
 import {
   View,
   StyleSheet,
@@ -12,15 +12,38 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import InputBar from "@/components/InputBar";
 import Button from "@/components/Button";
 import { router } from "expo-router";
+import { useSignup } from "./SignUpContext";
 
 export default function SignupMedical() {
-  const [bloodType, setBloodType] = React.useState("");
-  const [allergies, setAllergies] = React.useState("");
-  const [medications, setMedications] = React.useState("");
-  const [medical, setMedical] = React.useState("");
+  const { signupData, setSignupData } = useSignup();
+  const [error, setError] = useState("");
 
   const handleClick = () => {
     router.replace("/signup/emcontact");
+  };
+  const handleBloodTypeChange = (bloodType: string) => {
+    if (error) {
+      setError("");
+    }
+    setSignupData((prev) => ({ ...prev, bloodType }));
+  };
+  const handleAllergiesChange = (allergies: string) => {
+    if (error) {
+      setError("");
+    }
+    setSignupData((prev) => ({ ...prev, allergies }));
+  };
+  const handleMedicalConditionsChange = (medicalConditions: string) => {
+    if (error) {
+      setError("");
+    }
+    setSignupData((prev) => ({ ...prev, medicalConditions }));
+  };
+  const handleMedicationsChange = (medications: string) => {
+    if (error) {
+      setError("");
+    }
+    setSignupData((prev) => ({ ...prev, medications }));
   };
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -36,22 +59,34 @@ export default function SignupMedical() {
 
           <View style={styles.inputWrapper}>
             <Text style={styles.subText}>Blood Type</Text>
-            <InputBar value={bloodType} onChangeText={setBloodType} />
+            <InputBar
+              value={signupData.bloodType}
+              onChangeText={handleBloodTypeChange}
+            />
           </View>
 
           <View style={styles.inputWrapper}>
             <Text style={styles.subText}>Allergies</Text>
-            <InputBar value={allergies} onChangeText={setAllergies} />
+            <InputBar
+              value={signupData.allergies}
+              onChangeText={handleAllergiesChange}
+            />
           </View>
 
           <View style={styles.inputWrapper}>
             <Text style={styles.subText}>Medications</Text>
-            <InputBar value={medications} onChangeText={setMedications} />
+            <InputBar
+              value={signupData.medications}
+              onChangeText={handleMedicationsChange}
+            />
           </View>
 
           <View style={styles.inputWrapper}>
             <Text style={styles.subText}>Got any medical conditions?</Text>
-            <InputBar value={medical} onChangeText={setMedical} />
+            <InputBar
+              value={signupData.medicalConditions}
+              onChangeText={handleMedicalConditionsChange}
+            />
           </View>
 
           <Button value="Continue" onClick={handleClick} />

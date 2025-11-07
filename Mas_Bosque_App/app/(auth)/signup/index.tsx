@@ -66,6 +66,17 @@ export default function SignupEmail() {
           </View>
 
           <Button value="Continue" onClick={handleClick} />
+          <View style={styles.textWrapper}>
+            <Text style={styles.subtext}>Already have an account?</Text>
+            <Text
+              style={styles.signup}
+              onPress={() => {
+                router.replace("/(auth)/login");
+              }}
+            >
+              LogIn
+            </Text>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -107,5 +118,24 @@ const styles = StyleSheet.create({
     // You might want to use a regular font weight here
     fontFamily: "Lato-Bold",
     textAlign: "center",
+  },
+  textWrapper: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    gap: 5,
+  },
+  subtext: {
+    fontSize: 14,
+    fontWeight: "500",
+    fontFamily: "SF Pro Rounded",
+    color: "#fff",
+    textAlign: "left",
+  },
+  signup: {
+    fontSize: 14,
+    fontWeight: "500",
+    fontFamily: "SF Pro Rounded",
+    color: "#06D23C",
+    textAlign: "left",
   },
 });

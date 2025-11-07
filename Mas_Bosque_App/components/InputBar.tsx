@@ -5,7 +5,9 @@ import {
   TextInput,
   StyleProp,
   ViewStyle,
-  Platform, // Import Platform
+  Platform,
+  Pressable, // Import Pressable for the icon button
+  ColorValue,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -19,6 +21,19 @@ type InputBarProps = {
   placeholder?: string;
   /** Optional style to override the main container. */
   style?: StyleProp<ViewStyle>;
+
+  // --- NEW PROPS ---
+  /** If true, the input is not editable. */
+  disabled?: boolean;
+  /** If true, the text input obscures the text entered. */
+  secureTextEntry?: boolean;
+  /** A callback to toggle the secureTextEntry state. If provided, an eye icon is shown. */
+  onToggleSecureEntry?: () => void;
+
+  // --- Pass-through props for convenience ---
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
+  cursorColor?: ColorValue;
+  selectionColor?: ColorValue;
 };
 
 const InputBar = ({
@@ -26,13 +41,23 @@ const InputBar = ({
   onChangeText,
   placeholder = "",
   style,
+  disabled = false,
+  secureTextEntry = false,
+  onToggleSecureEntry,
+  autoCapitalize = "none",
+  cursorColor = "#06D23C",
+  selectionColor = "#06D23C",
 }: InputBarProps) => {
   return (
-    // This is the main "pill" container.
-    // Note it does NOT have flex: 1, so it will fit into its parent.
-    <View style={[styles.searchField, style]}>
-      {/* This frame holds the search icon and the text input.
-          It has 'flex: 1' so it expands, pushing the mic to the right. */}
+    // This is the main container. It grays out when disabled.
+    <View
+      style={[
+        styles.searchField,
+        disabled && styles.disabled, // Apply disabled style
+        style,
+      ]}
+    >
+      {/* This frame holds the text input and the icon */}
       <View style={styles.frame}>
         <TextInput
           style={styles.textInput}
@@ -40,12 +65,25 @@ const InputBar = ({
           placeholderTextColor="#999"
           value={value}
           onChangeText={onChangeText}
-          // --- ADD THESE PROPS ---
-          cursorColor="#04FF0C" // A bright green color
-          selectionColor="rgba(52, 211, 153, 0.3)" // A semi-transparent green for highlighting
-          // --- END OF ADDITIONS ---
+          editable={!disabled} // Use the disabled prop
+          secureTextEntry={secureTextEntry} // Use the secureTextEntry prop
+          autoCapitalize={autoCapitalize} // Pass through
+          cursorColor={cursorColor}
+          selectionColor={selectionColor}
         />
       </View>
+
+      {/* If onToggleSecureEntry is provided, show the eye icon */}
+      {onToggleSecureEntry && (
+        <Pressable onPress={onToggleSecureEntry} hitSlop={10}>
+          <Ionicons
+            name={secureTextEntry ? "eye-off-outline" : "eye-outline"}
+            size={22}
+            color="#999"
+            style={styles.icon}
+          />
+        </Pressable>
+      )}
     </View>
   );
 };
@@ -64,16 +102,20 @@ const styles = StyleSheet.create({
     alignItems: "center", // Centers children vertically
     width: "auto",
   },
+  disabled: {
+    backgroundColor: "#333", // Darker background when disabled
+    borderColor: "#666", // Dimmer border
+  },
   frame: {
-    // This frame holds the search icon and the text input
+    // This frame holds the text input
     flex: 1, // <-- This is KEY. It expands to fill available space
     flexDirection: "row",
     alignItems: "center",
-    gap: 8, // From your original Figma style
   },
   icon: {
     // A small tweak to align icons better with the text
     lineHeight: 22, // Matches the textInput's lineHeight
+    marginLeft: 8, // Add space between text input and icon
   },
   textInput: {
     // Based on your 'text' style
