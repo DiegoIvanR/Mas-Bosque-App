@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   StyleSheet,
-  Image,
   Text,
   KeyboardAvoidingView,
   Platform,
@@ -25,9 +24,14 @@ export default function SignupEMContact() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // 1. Validation constant
+  const isValid =
+    signupData.contactName.trim().length > 0 &&
+    signupData.contactPhone.trim().length > 0;
+
   const handleClick = async () => {
     // 3. Validate contact info (simple check)
-    if (!signupData.contactName || !signupData.contactPhone) {
+    if (!isValid) {
       setError("Please fill in at least the contact's name and phone number.");
       return;
     }
@@ -155,7 +159,6 @@ export default function SignupEMContact() {
       <View style={styles.header}>
         <GoBackButton />
       </View>
-
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -171,6 +174,7 @@ export default function SignupEMContact() {
             <InputBar
               value={signupData.contactName}
               onChangeText={handleNameChange}
+              autoCapitalize="words"
             />
           </View>
 
@@ -179,6 +183,7 @@ export default function SignupEMContact() {
             <InputBar
               value={signupData.contactLastName}
               onChangeText={handleLastName}
+              autoCapitalize="words"
             />
           </View>
 
@@ -187,6 +192,7 @@ export default function SignupEMContact() {
             <InputBar
               value={signupData.contactPhone}
               onChangeText={handlePhone}
+              keyboardType="phone-pad"
             />
           </View>
 
@@ -195,6 +201,7 @@ export default function SignupEMContact() {
             <InputBar
               value={signupData.contactRelationship}
               onChangeText={handleRelationship}
+              autoCapitalize="words"
             />
           </View>
 
@@ -206,6 +213,7 @@ export default function SignupEMContact() {
             <Button
               value={loading ? "Finishing..." : "Continue"}
               onClick={handleClick}
+              disabled={!isValid || loading} // 2. Add disabled prop
             />
           </View>
           {/* --- END OF SECTION --- */}

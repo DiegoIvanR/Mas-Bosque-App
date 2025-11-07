@@ -31,11 +31,15 @@ export default function SignupPassword() {
     setIsPasswordSecure((previousState) => !previousState);
   };
 
+  // 3. Create validation constant
+  const isPasswordValid = signupData.password.length >= 6;
+
   const handleClick = () => {
-    // 3. Validate the password (e.g., minimum 6 characters)
-    if (signupData.password.length < 6) {
+    // 4. Validate the password (e.g., minimum 6 characters)
+    if (!isPasswordValid) {
       setError("Password must be at least 6 characters long.");
     } else {
+      setError("");
       // 6. Success! User is created. Navigate to the next step.
       // (This runs even if email confirmation is required)
       router.push("/signup/name");
@@ -47,6 +51,7 @@ export default function SignupPassword() {
     if (error) {
       setError("");
     }
+    // We don't trim passwords
     setSignupData((prev) => ({ ...prev, password }));
   };
 
@@ -76,6 +81,7 @@ export default function SignupPassword() {
               // --- 3. ADD THESE PROPS ---
               secureTextEntry={isPasswordSecure} // Pass the state
               onToggleSecureEntry={toggleSecureEntry} // Pass the function
+              autoCapitalize="none"
             />
             {/* 4. Display the error message */}
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -86,6 +92,7 @@ export default function SignupPassword() {
             <Button
               value={loading ? "Creating Account..." : "Continue"}
               onClick={handleClick}
+              disabled={!isPasswordValid || loading} // 5. Pass disabled prop
             />
           </View>
         </ScrollView>
@@ -104,7 +111,7 @@ const styles = StyleSheet.create({
   header: {
     width: "100%",
     paddingLeft: 20,
-    paddingTop: 10,
+    paddingTop: 10, // Make it float on top
     zIndex: 10, // Ensure it's above the ScrollView
   },
   keyboardAvoidingView: {

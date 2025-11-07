@@ -2,41 +2,49 @@ import * as React from "react";
 import {
   StyleSheet,
   View,
-  TextInput,
   Pressable,
   StyleProp,
   ViewStyle,
   Platform,
-  Text, // Import Platform
+  Text,
 } from "react-native";
 
-// Define the props for the component
-type InputBarProps = {
-  /** The current value of the search input. */
+// 1. Rename type
+type ButtonProps = {
+  /** The text to display inside the button. */
   value: string;
-  /** Callback that is called when the text input's text changes. */
+  /** Callback that is called when the button is pressed. */
   onClick: () => void;
+  /** Optional custom background color. */
   backgroundColor?: string;
+  /** Optional custom border color. */
   borderColor?: string;
+  /** Optional custom text color. */
   textColor?: string;
+  /** If true, the button will be grayed out and unpressable. */
+  disabled?: boolean; // 2. Add disabled prop
 };
 
-const InputBar = ({
+// 3. Rename component
+const Button = ({
   value,
   onClick,
   backgroundColor = "#FFFFFF",
   borderColor = "rgba(0, 0, 0, 0)",
   textColor = "#00160a",
-}: InputBarProps) => {
+  disabled = false, // 4. Use disabled prop
+}: ButtonProps) => {
   return (
-    // This is the main "pill" container.
-    // Note it does NOT have flex: 1, so it will fit into its parent.
     <Pressable
-      style={[
+      style={({ pressed }) => [
         styles.pressable,
         { backgroundColor: backgroundColor, borderColor: borderColor },
+        // 5. Add styles for pressed and disabled
+        pressed && !disabled && styles.pressed,
+        disabled && styles.disabled,
       ]}
       onPress={onClick}
+      disabled={disabled} // 6. Pass disabled to Pressable
     >
       <View style={styles.frame}>
         <Text style={[styles.text, { color: textColor }]}>{value}</Text>
@@ -80,9 +88,17 @@ const styles = StyleSheet.create({
     paddingVertical: 11, // Use vertical padding
     flexDirection: "row", // Lays out children (frame, mic) horizontally
     alignItems: "center", // Centers children vertically
-    width: "auto",
+    width: "100%", // <-- THIS WAS THE SQUISHED BUG!! (was "auto")
     height: 50,
+  },
+  // 7. Add new styles
+  pressed: {
+    opacity: 0.8,
+  },
+  disabled: {
+    opacity: 0.5,
   },
 });
 
-export default InputBar;
+// 8. Rename export
+export default Button;
