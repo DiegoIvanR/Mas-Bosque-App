@@ -15,38 +15,16 @@ export default function LoginLayout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: true,
-        headerTransparent: true,
-        headerTitle: "",
+        // --- THIS IS THE FIX ---
+        // 1. Turn the header off completely.
+        headerShown: false,
+        // 2. Set the animation
         animation: "simple_push",
-
-        // 5. This is the new, conditional logic
-        headerLeft: () => {
-          // If it's the first screen, render nothing
-          if (isFirstScreen) {
-            return null;
-          }
-
-          // Otherwise, render the back button
-          // This button's onClick will now *always* work,
-          // because it only exists on screens that can go back.
-          return (
-            <GoBackButton
-              onClick={() => router.back()} // We only need a simple router.back()
-              style={{
-                marginLeft: 10,
-                marginTop: Platform.OS === "android" ? 10 : 0,
-              }}
-            />
-          );
-        },
       }}
     >
       {/*
-          This setup will now work perfectly:
-          - On 'index' (email), NO back button will appear.
-          - On 'password', a back button will appear and go to 'index'.
-          - On 'name', a back button will appear and go to 'password'.
+          Now, we will add the GoBackButton manually to each
+          screen *except* the first one (index.tsx).
         */}
     </Stack>
   );

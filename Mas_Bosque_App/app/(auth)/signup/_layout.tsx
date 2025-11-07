@@ -30,7 +30,7 @@ export default function SignupLayout() {
         screenOptions={{
           headerShown: false,
           // --- ADD THIS LINE ---
-          animation: "fade", // or 'none' for instant
+          animation: "simple_push", // or 'none' for instant
         }}
       />
     </SignupContext.Provider>

@@ -17,6 +17,7 @@ import { supabase } from "@/lib/SupabaseClient";
 // 1. Import your new database functions
 import { initDatabase, saveUserDataLocally } from "@/lib/database";
 import { useAuth } from "@/lib/auth"; // 1. Import useAuth
+import GoBackButton from "@/components/GoBackButton"; // 2. Import
 
 export default function SignupEMContact() {
   const { signupData, setSignupData } = useSignup();
@@ -112,7 +113,7 @@ export default function SignupEMContact() {
 
       // 3. SET THE GLOBAL AUTH STATE
       setIsLoggedIn(true);
-      router.push("/(tabs)"); // Success!
+      router.replace("/(tabs)"); // Success!
     } else {
       setError(
         "An unexpected error occurred (contact not saved). Please try again."
@@ -150,6 +151,11 @@ export default function SignupEMContact() {
   };
   return (
     <SafeAreaView style={styles.safeArea}>
+      {/* 3. Add the button here */}
+      <View style={styles.header}>
+        <GoBackButton />
+      </View>
+
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -215,11 +221,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#00160B",
   },
+  // 4. Add header style
+  header: {
+    width: "100%",
+    paddingLeft: 20,
+    paddingTop: 10,
+    zIndex: 10,
+  },
   keyboardAvoidingView: {
     flex: 1,
   },
   container: {
-    flexGrow: 0.5, // ensures ScrollView content expands properly
+    flexGrow: 0.5, // 5. Fix: Make style identical to index.tsx
     paddingHorizontal: 30,
     alignItems: "center",
     justifyContent: "center",
@@ -245,6 +258,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "left",
   },
+  // --- ADDED THESE STYLES ---
   buttonContainer: {
     width: "100%", // Ensure it takes full width for alignment
     alignItems: "center", // Center Button
