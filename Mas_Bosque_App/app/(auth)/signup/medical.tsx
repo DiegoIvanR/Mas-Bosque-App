@@ -19,7 +19,7 @@ export default function SignupMedical() {
   const [error, setError] = useState("");
 
   const handleClick = () => {
-    router.replace("/signup/emcontact");
+    router.push("/signup/emcontact");
   };
   const handleBloodTypeChange = (bloodType: string) => {
     if (error) {

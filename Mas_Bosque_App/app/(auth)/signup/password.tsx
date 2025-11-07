@@ -12,7 +12,6 @@ import InputBar from "@/components/InputBar";
 import Button from "@/components/Button";
 import { router } from "expo-router";
 import { useSignup } from "./SignUpContext"; // Fixed typo: was SignUpContext
-import { supabase } from "@/lib/SupabaseClient"; // 1. Import your Supabase client
 
 export default function SignupPassword() {
   // 1. Get the global state and setter
@@ -38,7 +37,7 @@ export default function SignupPassword() {
     } else {
       // 6. Success! User is created. Navigate to the next step.
       // (This runs even if email confirmation is required)
-      router.replace("/signup/name");
+      router.push("/signup/name");
     }
   };
 

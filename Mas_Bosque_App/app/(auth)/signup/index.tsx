@@ -29,7 +29,7 @@ export default function SignupEmail() {
       setError("Please enter a valid email address.");
     } else {
       setError(""); // Clear error
-      router.replace("/signup/password");
+      router.push("/signup/password");
     }
   };
 
@@ -71,7 +71,7 @@ export default function SignupEmail() {
             <Text
               style={styles.signup}
               onPress={() => {
-                router.replace("/(auth)/login");
+                router.push("/(auth)/login");
               }}
             >
               LogIn

@@ -19,7 +19,7 @@ export default function SignupName() {
   const [error, setError] = useState("");
 
   const handleClick = () => {
-    router.replace("/signup/medical");
+    router.push("/signup/medical");
   };
   const handleNameChange = (name: string) => {
     if (error) {
