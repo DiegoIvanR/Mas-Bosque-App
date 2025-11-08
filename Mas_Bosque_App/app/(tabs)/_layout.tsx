@@ -1,9 +1,11 @@
 import { Tabs, useRouter } from "expo-router";
+import { BottomTabBar } from '@react-navigation/bottom-tabs';
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../lib/auth";
 import { Ionicons } from "@expo/vector-icons"; // Import an icon set
 import SOSConfirmation from "../(sos)/SOSConfirmation";
 import { View, StyleSheet, Modal } from "react-native";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Define props for the icon component
 type TabBarIconProps = {
@@ -24,6 +26,8 @@ export default function TabLayout() {
   // SOS modal state
   const [sosVisible, setSOSVisible] = useState(false);
   const [selectedEmergency, setSelectedEmergency] = useState<string>("");
+  // const insets = useSafeAreaInsets();
+  const [tabBarHeight, setTabBarHeight] = useState(0);
 
   useEffect(() => {
     setIsReady(true); // Mark layout as mounted
@@ -51,102 +55,107 @@ export default function TabLayout() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: "#FFFFFF",
-          tabBarInactiveTintColor: "#676767",
-          tabBarStyle: {
-            backgroundColor: "#00160B",
-          },
-          tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: "500",
-          },
-        }}
-      >
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: "Explore",
-            tabBarIcon: ({ color, size, focused }) => (
-              <TabBarIcon
-                name={focused ? "compass" : "compass-outline"}
-                color={color}
-                size={size}
-              />
-            ),
+    <>
+      <View style={{ flex: 1 }}>
+        <Tabs
+          screenOptions={{
+            headerShown: false,
+            tabBarActiveTintColor: "#FFFFFF",
+            tabBarInactiveTintColor: "#676767",
+            tabBarStyle: {
+              backgroundColor: "#00160B",
+            },
+            tabBarLabelStyle: {
+              fontSize: 12,
+              fontWeight: "500",
+            },
           }}
-        />
-        {/* ... other screens ... */}
-        <Tabs.Screen
-          name="community"
-          options={{
-            title: "Community",
-            tabBarIcon: ({ color, size, focused }) => (
-              <TabBarIcon
-                name={focused ? "people" : "people-outline"}
-                color={color}
-                size={size}
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="saved"
-          options={{
-            title: "Saved",
-            tabBarIcon: ({ color, size, focused }) => (
-              <TabBarIcon
-                name={focused ? "bookmark" : "bookmark-outline"}
-                color={color}
-                size={size}
-              />
-            ),
-          }}
-          // Pass triggerSOS as a prop to saved.tsx
-          initialParams={{ triggerSOS }}
-        />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            title: "Profile",
-            tabBarIcon: ({ color, size, focused }) => (
-              <TabBarIcon
-                name={focused ? "person-circle" : "person-circle-outline"}
-                color={color}
-                size={size}
-              />
-            ),
-          }}
-        />
-      </Tabs>
-      {/* SOSConfirmation overlay modal */}
+          tabBar={props => (
+            <View onLayout={e => setTabBarHeight(e.nativeEvent.layout.height)}>
+              <BottomTabBar {...props} />
+            </View>
+          )}
+        >
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: "Explore",
+              tabBarIcon: ({ color, size, focused }) => (
+                <TabBarIcon
+                  name={focused ? "compass" : "compass-outline"}
+                  color={color}
+                  size={size}
+                />
+              ),
+            }}
+          />
+          {/* ... other screens ... */}
+          <Tabs.Screen
+            name="community"
+            options={{
+              title: "Community",
+              tabBarIcon: ({ color, size, focused }) => (
+                <TabBarIcon
+                  name={focused ? "people" : "people-outline"}
+                  color={color}
+                  size={size}
+                />
+              ),
+            }}
+          />
+          <Tabs.Screen
+            name="saved"
+            options={{
+              title: "Saved",
+              tabBarIcon: ({ color, size, focused }) => (
+                <TabBarIcon
+                  name={focused ? "bookmark" : "bookmark-outline"}
+                  color={color}
+                  size={size}
+                />
+              ),
+            }}
+            // Pass triggerSOS as a prop to saved.tsx
+            initialParams={{ triggerSOS }}
+          />
+          <Tabs.Screen
+            name="profile"
+            options={{
+              title: "Profile",
+              tabBarIcon: ({ color, size, focused }) => (
+                <TabBarIcon
+                  name={focused ? "person-circle" : "person-circle-outline"}
+                  color={color}
+                  size={size}
+                />
+              ),
+            }}
+          />
+        </Tabs>
+      </View>
+      {/* SOSConfirmation overlay modal - now outside the Tabs container */}
       <Modal
         visible={sosVisible}
         animationType="slide"
         transparent
         onRequestClose={() => setSOSVisible(false)}
       >
-        <View style={styles.sosModalRoot}>
+        {/* <View style={[styles.sosModalRoot, { paddingBottom: insets.bottom + tabBarHeight }]}>  */}
+        <View style={[styles.sosModalRoot, { paddingBottom: tabBarHeight }]}>
           <SOSConfirmation
             onEmergencySelected={handleSelect}
             onSend={handleSend}
           />
         </View>
       </Modal>
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   sosModalRoot: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
+    flex: 1,
+    justifyContent: 'flex-end',
     backgroundColor: 'rgba(0,0,0,0.35)',
     // zIndex is not needed in Modal, but can be added if necessary
   },
