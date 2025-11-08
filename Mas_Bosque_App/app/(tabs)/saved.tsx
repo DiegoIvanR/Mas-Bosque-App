@@ -1,34 +1,25 @@
-import { useState } from "react"
+import { useRoute } from "@react-navigation/native";
 import { Text, View } from "react-native";
 import SOSButton from '../(sos)/Button';
-import SOSConfirmation from "../(sos)/SOSConfirmation";
 
 export default function Explore() {
-  const [sosTriggered, setSOSTriggered] = useState(false);
+  // Get triggerSOS from initialParams passed by TabLayout
+  const route = useRoute();
+  // @ts-ignore
+  const triggerSOS = route.params?.triggerSOS;
 
-  const triggerSOS = async () => {
-      // Example API call
-      await Promise.resolve();
-      console.log("SOS PRESSED!")
-      setSOSTriggered(true);
-    };
+  const handleSOS = async () => {
+    if (typeof triggerSOS === 'function') {
+      await triggerSOS();
+    }
 
-    const handleSelect = (emergency: string) => {
-      console.log('Selected:', emergency);
-    };
-
-    const handleSend = (emergency: string) => {
-      console.log('Sending:', emergency);
-    };
+    console.log("SOS PRESSED!");
+  };
 
   return (
     <View>
       <Text>Saved!</Text>
-      {!sosTriggered && <SOSButton onSOSActivated={triggerSOS} />}
-      {sosTriggered && <SOSConfirmation 
-      onEmergencySelected={handleSelect} 
-      onSend={handleSend}
-      />}
+      <SOSButton onSOSActivated={handleSOS} />
     </View>
   );
 }

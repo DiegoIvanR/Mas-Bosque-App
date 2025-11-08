@@ -14,8 +14,8 @@ interface ButtonProps {
 function Button({ onSOSActivated }: ButtonProps) {
     const [isPressed, setIsPressed] = useState(false);
   const progress = useRef(new Animated.Value(0)).current;
-  const holdDuration = 5000; // 5 seconds
-  const holdTimeout = useRef<NodeJS.Timeout | null>(null);
+  const holdDuration = 1; // 5 seconds
+  const holdTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handlePressIn = () => {
     setIsPressed(true);
