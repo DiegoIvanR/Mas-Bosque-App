@@ -63,7 +63,7 @@ export default function TabLayout() {
             tabBarActiveTintColor: "#FFFFFF",
             tabBarInactiveTintColor: "#676767",
             tabBarStyle: {
-              backgroundColor: "#00160B",
+              backgroundColor: sosVisible ? "#300001" : "#00160B",
             },
             tabBarLabelStyle: {
               fontSize: 12,

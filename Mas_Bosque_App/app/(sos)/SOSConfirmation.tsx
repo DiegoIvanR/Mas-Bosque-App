@@ -48,7 +48,7 @@ export default function SOSConfirmation({
 
   return (
     <LinearGradient
-      colors={['#300001', '#960002']}
+      colors={['#960002', '#300001']}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
       style={styles.container}
