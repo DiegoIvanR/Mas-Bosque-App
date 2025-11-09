@@ -9,12 +9,13 @@ import {
   Text,
 } from "react-native";
 
-// 1. Rename type
 type ButtonProps = {
   /** The text to display inside the button. */
   value: string;
   /** Callback that is called when the button is pressed. */
   onClick: () => void;
+  /** Optional: A ReactNode (e.g., an Icon component) to display. */
+  icon?: React.ReactNode;
   /** Optional custom background color. */
   backgroundColor?: string;
   /** Optional custom border color. */
@@ -22,31 +23,32 @@ type ButtonProps = {
   /** Optional custom text color. */
   textColor?: string;
   /** If true, the button will be grayed out and unpressable. */
-  disabled?: boolean; // 2. Add disabled prop
+  disabled?: boolean;
 };
 
-// 3. Rename component
 const Button = ({
   value,
   onClick,
+  icon, // <-- New prop
   backgroundColor = "#FFFFFF",
   borderColor = "rgba(0, 0, 0, 0)",
   textColor = "#00160a",
-  disabled = false, // 4. Use disabled prop
+  disabled = false,
 }: ButtonProps) => {
   return (
     <Pressable
       style={({ pressed }) => [
         styles.pressable,
         { backgroundColor: backgroundColor, borderColor: borderColor },
-        // 5. Add styles for pressed and disabled
         pressed && !disabled && styles.pressed,
         disabled && styles.disabled,
       ]}
       onPress={onClick}
-      disabled={disabled} // 6. Pass disabled to Pressable
+      disabled={disabled}
     >
       <View style={styles.frame}>
+        {/* Render icon if it exists */}
+        {icon}
         <Text style={[styles.text, { color: textColor }]}>{value}</Text>
       </View>
     </Pressable>
@@ -57,41 +59,34 @@ const Button = ({
 
 const styles = StyleSheet.create({
   frame: {
-    // This frame holds the search icon and the text input
-    flex: 1, // <-- This is KEY. It expands to fill available space
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    gap: 8, // From your original Figma style
+    justifyContent: "center", // <-- Center icon and text
+    gap: 10, // <-- Use gap from your original [id].tsx
   },
   text: {
-    // Based on your 'text' style
     fontSize: 17,
     letterSpacing: -0.08,
     lineHeight: 22,
-    // Use 'SF Pro' on iOS, fallback to default system font on Android
-
-    fontFamily: "SF Pro Rounded",
+    fontFamily: "SF Pro Rounded", // Using your Button.tsx font
     textAlign: "center",
-
-    // Make it functional
-    flex: 1, // Fills the 'frame'
-    // Remove default web/android padding
-    padding: 0,
-    margin: 0,
-
     fontWeight: "500",
+
+    // --- Key Change ---
+    // Remove flex: 1 so text doesn't push icon to the edge
+    // flex: 1,
   },
   pressable: {
     borderRadius: 1000,
     borderWidth: 2,
-    paddingHorizontal: 11, // Use horizontal padding
-    paddingVertical: 11, // Use vertical padding
-    flexDirection: "row", // Lays out children (frame, mic) horizontally
-    alignItems: "center", // Centers children vertically
-    width: "100%", // <-- THIS WAS THE SQUISHED BUG!! (was "auto")
+    paddingHorizontal: 11,
+    paddingVertical: 11,
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
     height: 50,
   },
-  // 7. Add new styles
   pressed: {
     opacity: 0.8,
   },
@@ -100,5 +95,4 @@ const styles = StyleSheet.create({
   },
 });
 
-// 8. Rename export
 export default Button;

@@ -203,3 +203,33 @@ export const clearLocalData = async () => {
     console.error("Error clearing local database:", error.message);
   }
 };
+// Add these two new functions to your existing lib/database.ts file
+
+/**
+ * Checks if a route with a given ID is already saved in the local database.
+ * Returns true if saved, false otherwise.
+ */
+export const checkIfRouteIsSaved = async (id: string): Promise<boolean> => {
+  try {
+    const result = await db.getFirstAsync<{ id: string }>(
+      "SELECT id FROM saved_routes WHERE id = ?;",
+      id
+    );
+    return result != null;
+  } catch (error) {
+    console.error("Error checking if route is saved:", error);
+    return false;
+  }
+};
+
+/**
+ * Deletes a single saved route by its ID.
+ */
+export const deleteLocalRouteById = async (id: string): Promise<void> => {
+  try {
+    await db.runAsync("DELETE FROM saved_routes WHERE id = ?;", id);
+  } catch (error) {
+    console.error("Error deleting local route:", error);
+    throw error;
+  }
+};

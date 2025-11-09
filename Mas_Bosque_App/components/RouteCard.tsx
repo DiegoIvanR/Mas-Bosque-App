@@ -28,7 +28,6 @@ export default function RouteCard({ route }: { route: RoutePreview }) {
             <MaterialIcons name="star" size={14} color="#A0A0A0" />
             {/* gray star */}
             <Text style={styles.cardInfoText}>
-              {" "}
               {route.rating} · {route.difficulty} · {route.distance_km} km
             </Text>
           </View>
