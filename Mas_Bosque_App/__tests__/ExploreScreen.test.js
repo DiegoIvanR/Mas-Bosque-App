@@ -1,7 +1,7 @@
 import React from "react";
 import { render, waitFor } from "@testing-library/react-native";
 import ExploreScreen from "@/app/(tabs)/index";
-import { mockFrom, mockSelect, mockIlike, mockRange } from "@/lib/SupabaseClient";
+import { mockFrom, mockSelect, mockRange } from "@/lib/SupabaseClient";
 
 // Tell Jest to use the mock automatically
 jest.mock("@/lib/SupabaseClient");
