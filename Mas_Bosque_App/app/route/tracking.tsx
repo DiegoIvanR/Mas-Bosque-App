@@ -1,0 +1,79 @@
+import React, { useState, useEffect, useCallback } from "react";
+import { View, Text } from "react-native";
+import { useLocalSearchParams, router } from "expo-router";
+import { supabase } from "@/lib/SupabaseClient";
+import { Route } from "@/lib/database";
+import { useTrackingSession } from "@/lib/useTrackingSession";
+import { TrackingView } from "@/components/TrackingView";
+
+// --- CONTROLLER ---
+export default function TrackingScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+
+  // State for data fetching
+  const [routePolyline, setRoutePolyline] = useState<
+    Route["route_data"] | null
+  >(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Model: Initialize the tracking session hook
+  const sessionState = useTrackingSession();
+
+  // Effect: Fetch the route polyline (Model interaction)
+  useEffect(() => {
+    if (!id) {
+      setError("No route ID provided.");
+      setLoading(false);
+      return;
+    }
+
+    async function fetchPolyline() {
+      setLoading(true);
+      setError(null);
+      try {
+        // Only fetch the coordinates to save bandwidth
+        const { data, error } = await supabase
+          .from("routes")
+          .select("route_data")
+          .eq("id", id)
+          .single();
+
+        if (error) throw error;
+        if (!data || !data.route_data) throw new Error("Route data not found.");
+
+        setRoutePolyline(data.route_data);
+      } catch (e: any) {
+        setError(e.message || "Failed to fetch route polyline.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPolyline();
+  }, [id]);
+
+  // Handlers
+  const handleExitSession = useCallback(() => {
+    sessionState.stopSession(); // Stop listeners
+    router.back(); // Go back to the route detail screen
+  }, [sessionState.stopSession]);
+
+  const handleSOS = useCallback(() => {
+    // Placeholder as requested
+    console.log("SOS Button Pressed!");
+    // TODO: Implement SOS logic
+  }, []);
+
+  // --- RENDER (View) ---
+  return (
+    <TrackingView
+      loading={loading}
+      error={error}
+      routePolyline={routePolyline}
+      sessionState={sessionState}
+      onExit={handleExitSession}
+      onSOS={handleSOS}
+    />
+  );
+}

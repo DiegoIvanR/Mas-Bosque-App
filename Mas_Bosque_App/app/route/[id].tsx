@@ -7,17 +7,17 @@ import React, {
 } from "react";
 import MapView from "react-native-maps";
 import * as Location from "expo-location";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, router } from "expo-router"; // <-- Import router
 import BottomSheet from "@gorhom/bottom-sheet";
-import { ToastAndroid } from "react-native"; // For user feedback
+import { ToastAndroid } from "react-native";
 
 import { supabase } from "@/lib/SupabaseClient";
 import {
   Route,
   getLocalRouteById,
   saveRouteLocally,
-  checkIfRouteIsSaved, // <-- Import new function
-  deleteLocalRouteById, // <-- Import new function
+  checkIfRouteIsSaved,
+  deleteLocalRouteById,
 } from "@/lib/database";
 import { RouteDetailView } from "@/components/RouteDetailView";
 
@@ -28,23 +28,21 @@ export default function RouteDetailScreen() {
     isOffline?: string;
   }>();
 
-  // --- STATE ---
+  // (All your existing state, refs, memos, and effects remain the same)
+  // ... state ...
+  // ... refs ...
+  // ... memos ...
+  // ... useEffects ...
+
   const [route, setRoute] = useState<Route | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasLocationPermission, setHasLocationPermission] = useState(false);
-  const [isDownloaded, setIsDownloaded] = useState(false); // <-- New State
-
-  // --- REFS ---
+  const [isDownloaded, setIsDownloaded] = useState(false);
   const mapRef = useRef<MapView>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ["28%", "60%"], []);
 
-  // --- MEMOS ---
-  const snapPoints = useMemo(() => ["25%", "60%"], []);
-
-  // --- EFFECTS (Logic) ---
-
-  // 1. Ask for location permission
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -56,26 +54,19 @@ export default function RouteDetailScreen() {
     })();
   }, []);
 
-  // 2. Fetch Route Data (Model interaction)
   useEffect(() => {
     if (!id) return;
-
     async function fetchRoute() {
       setLoading(true);
       setError(null);
       try {
-        // --- THIS IS THE NEW LOGIC ---
-        // 1. Check if it's saved locally regardless
         const isSaved = await checkIfRouteIsSaved(id);
         setIsDownloaded(isSaved);
-
-        // 2. Fetch the full route data
         let data: Route | null = null;
         if (isOffline === "true") {
           data = await getLocalRouteById(id);
           if (!data) throw new Error("Route not found in local storage.");
         } else {
-          // Still fetch from Supabase to ensure data is fresh
           const { data: supabaseData, error } = await supabase
             .from("routes")
             .select("*")
@@ -94,9 +85,6 @@ export default function RouteDetailScreen() {
     fetchRoute();
   }, [id, isOffline]);
 
-  // --- CALLBACKS (Handlers) ---
-
-  // 3. Center map on the route once it's loaded
   const onMapReady = useCallback(() => {
     if (route && route.route_data && mapRef.current) {
       mapRef.current.fitToCoordinates(route.route_data, {
@@ -106,12 +94,9 @@ export default function RouteDetailScreen() {
     }
   }, [route]);
 
-  // 4. Handle Download/Delete button press (TOGGLE)
   const handleToggleDownload = useCallback(async () => {
     if (!route) return;
-
     if (isDownloaded) {
-      // It's already saved, so delete it
       try {
         await deleteLocalRouteById(route.id);
         setIsDownloaded(false);
@@ -121,7 +106,6 @@ export default function RouteDetailScreen() {
         ToastAndroid.show("Failed to remove route", ToastAndroid.SHORT);
       }
     } else {
-      // It's not saved, so download it
       try {
         await saveRouteLocally(route);
         setIsDownloaded(true);
@@ -133,12 +117,17 @@ export default function RouteDetailScreen() {
     }
   }, [route, isDownloaded]);
 
-  // 5. Handle Start button press
+  // --- UPDATE THIS HANDLER ---
   const handleStart = useCallback(() => {
     if (!route) return;
-    console.log("Starting route...", route.id);
-    // TODO: Implement navigation logic
+    // This is the navigation you wanted.
+    // It pushes the new screen onto the stack.
+    router.push({
+      pathname: "/route/tracking",
+      params: { id: route.id },
+    });
   }, [route]);
+  // --- END OF UPDATE ---
 
   // --- RENDER (View) ---
   return (
@@ -147,13 +136,13 @@ export default function RouteDetailScreen() {
       error={error}
       route={route}
       hasLocationPermission={hasLocationPermission}
-      isDownloaded={isDownloaded} // <-- Pass new prop
+      isDownloaded={isDownloaded}
       mapRef={mapRef}
       onMapReady={onMapReady}
       bottomSheetRef={bottomSheetRef}
       snapPoints={snapPoints}
-      onToggleDownload={handleToggleDownload} // <-- Pass new handler
-      onStart={handleStart}
+      onToggleDownload={handleToggleDownload}
+      onStart={handleStart} // This now triggers the navigation
     />
   );
 }
