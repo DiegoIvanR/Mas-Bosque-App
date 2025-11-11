@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  Pressable, 
-  StyleSheet, 
-  Animated 
+import { createClient } from '@supabase/supabase-js';
+import * as Location from 'expo-location';
+import React, { useRef, useState } from 'react';
+import {
+  Animated,
+  Pressable,
+  StyleSheet,
+  Text
 } from 'react-native';
 
 interface ButtonProps {
@@ -12,10 +13,16 @@ interface ButtonProps {
 }
 
 function Button({ onSOSActivated }: ButtonProps) {
-    const [isPressed, setIsPressed] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
+  const [latitude, setLatitude] = useState(Number);
+  const [longitude, setLongitude] = useState(Number);
   const progress = useRef(new Animated.Value(0)).current;
   const holdDuration = 1; // 5 seconds
   const holdTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // const supabase = createClient(process.env.EXPO_PUBLIC_SUPABASE_URL!, process.env.EXPO_PUBLIC_SUPABASE_KEY!)
+  const supabase = createClient(process.env.EXPO_PUBLIC_SUPABASE_URL!, process.env.EXPO_PUBLIC_SUPABASE_KEY!)
+
 
   const handlePressIn = () => {
     setIsPressed(true);
@@ -30,6 +37,27 @@ function Button({ onSOSActivated }: ButtonProps) {
     // After 5 seconds, trigger SOS
     holdTimeout.current = setTimeout(async () => {
       try {
+        // Get the user location
+        const location = await Location.getCurrentPositionAsync({});
+        setLatitude(location.coords.latitude)
+        setLongitude(location.coords.longitude);
+
+        // Get the user id
+        const { data: { user } } = await supabase.auth.getUser();
+        const userId = user?.id;
+
+        // Get the timestamp
+        const timestamp: string = new Date().toISOString();
+
+        // Make the api call
+        const { data: todos, error } = await supabase
+          .from('SOS')
+          .insert({
+            user_id: userId,
+            latitud: latitude,
+            longitud: longitude,
+            timestamp_inicio: timestamp,
+          });
         await onSOSActivated();
       } catch (e) {
         console.error('SOS activation failed:', e);
