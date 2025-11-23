@@ -36,13 +36,3 @@ export default function SignupLayout() {
     </SignupContext.Provider>
   );
 }
-/*
-
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        // --- ADD THIS LINE ---
-        animation: "fade", // or 'none' for instant
-      }}
-    />
-*/

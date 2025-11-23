@@ -18,7 +18,7 @@ type TrackingMapViewProps = {
   onExit: () => void;
 };
 
-type FollowMode = "none" | "center" | "heading";
+type FollowMode = "none" | "center";
 
 export function TrackingMapView({
   routePolyline,
@@ -27,7 +27,7 @@ export function TrackingMapView({
   onExit,
 }: TrackingMapViewProps) {
   const mapRef = useRef<MapView>(null);
-  const [followMode, setFollowMode] = useState<FollowMode>("heading");
+  const [followMode, setFollowMode] = useState<FollowMode>("center");
   const [mapHeading, setMapHeading] = useState(0);
   const animatedIconRotation = useRef(new Animated.Value(0)).current;
 
@@ -45,18 +45,7 @@ export function TrackingMapView({
 
     let targetMapHeading = 0;
 
-    if (followMode === "heading") {
-      targetMapHeading = heading.trueHeading;
-      mapRef.current.animateCamera(
-        {
-          center: location.coords,
-          pitch: 60,
-          heading: targetMapHeading,
-          ...cameraConfig,
-        },
-        { duration: ANIMATION_DURATION } // <-- USE SHARED DURATION
-      );
-    } else {
+    if (followMode === "center") {
       // 'center' mode
       targetMapHeading = 0;
       mapRef.current.animateCamera(
@@ -106,16 +95,13 @@ export function TrackingMapView({
     if (followMode === "none") {
       setFollowMode("center");
     } else if (followMode === "center") {
-      setFollowMode("heading");
-    } else {
-      setFollowMode("center");
+      setFollowMode("none");
     }
   };
 
   const getRecenterIcon = () => {
     if (followMode === "none") return "locate";
     if (followMode === "center") return "locate";
-    if (followMode === "heading") return "compass";
   };
 
   const animatedIconStyle = {
