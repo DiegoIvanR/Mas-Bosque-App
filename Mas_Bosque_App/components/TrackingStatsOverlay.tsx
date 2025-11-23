@@ -1,56 +1,73 @@
-import React, { useState } from "react";
-import { StyleSheet, View, Text, Pressable } from "react-native";
+import React from "react";
+import { StyleSheet, View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { formatTime } from "@/lib/helpers";
+import SOSButton from "@/components/SOSButton";
+import SOSConfirmation from "@/app/(sos)/SOSConfirmation";
+import { useSOSController } from "@/hooks/useSOSController";
 
 type TrackingStatsOverlayProps = {
   elapsedTime: number;
   distanceTraveled: number;
-  onSOS: () => void;
 };
 
 export function TrackingStatsOverlay({
   elapsedTime,
   distanceTraveled,
-  onSOS,
 }: TrackingStatsOverlayProps) {
-  const [sosActive, setSosActive] = useState(false);
+  const { status, activateSOS, confirmEmergencyDetails } = useSOSController();
 
-  const handleSOS = () => {
-    setSosActive(!sosActive);
-    onSOS();
-  };
+  const isSOSProcessActive =
+    status === "SENDING_INITIAL" || status === "NEEDS_DETAILS";
+  const isCooldown = status === "COOLDOWN";
 
   return (
-    <SafeAreaView style={styles.overlayContainer} edges={["bottom"]}>
-      <View style={styles.statsRow}>
-        <View style={styles.statBox}>
-          <Text style={styles.statValue}>{formatTime(elapsedTime)}</Text>
-          <Text style={styles.statLabel}>Time</Text>
-        </View>
-
-        <Pressable
-          style={[
-            styles.sosButton,
-            sosActive ? styles.sosButtonActive : styles.sosButtonInactive,
-          ]}
-          onPress={handleSOS}
+    <SafeAreaView
+      style={[
+        styles.overlayContainer,
+        // Normal background when NOT in SOS
+        { backgroundColor: isSOSProcessActive ? undefined : "#00160B" },
+        { bottom: isSOSProcessActive ? -35 : 0 },
+      ]}
+      edges={["bottom"]}
+    >
+      {isSOSProcessActive ? (
+        <LinearGradient
+          colors={["#960002", "#300001"]} // red → black
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={styles.fill}
         >
-          <Text
-            style={[
-              styles.sosText,
-              sosActive ? styles.sosTextActive : styles.sosTextInactive,
-            ]}
-          >
-            SOS
-          </Text>
-        </Pressable>
+          <SOSConfirmation
+            onEmergencySelected={(type) => console.log("Selected:", type)}
+            onSend={confirmEmergencyDetails}
+            isSendingInitialSignal={status === "SENDING_INITIAL"}
+          />
+        </LinearGradient>
+      ) : (
+        <View style={styles.fill}>
+          <View style={styles.statsRow}>
+            <View style={styles.statBox}>
+              <Text style={styles.statValue}>{formatTime(elapsedTime)}</Text>
+              <Text style={styles.statLabel}>Time</Text>
+            </View>
 
-        <View style={styles.statBox}>
-          <Text style={styles.statValue}>{distanceTraveled.toFixed(2)}</Text>
-          <Text style={styles.statLabel}>Distance (km)</Text>
+            <SOSButton
+              onLongPressComplete={activateSOS}
+              isDisabled={isSOSProcessActive}
+              isCooldown={isCooldown}
+            />
+
+            <View style={styles.statBox}>
+              <Text style={styles.statValue}>
+                {distanceTraveled.toFixed(2)}
+              </Text>
+              <Text style={styles.statLabel}>Distance (km)</Text>
+            </View>
+          </View>
         </View>
-      </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -61,9 +78,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "#00160B",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    minHeight: 120,
+    overflow: "hidden", // needed for rounded corners
+  },
+  fill: {
+    flex: 1,
+    justifyContent: "center",
   },
   statsRow: {
     flexDirection: "row",
@@ -85,33 +107,5 @@ const styles = StyleSheet.create({
     color: "#8E8E93",
     fontSize: 14,
     fontFamily: "Lato-Regular",
-  },
-  sosButton: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 4,
-    justifyContent: "center",
-    alignItems: "center",
-    marginHorizontal: 20,
-    bottom: 15,
-  },
-  sosButtonInactive: {
-    borderColor: "#FF5A5A",
-    backgroundColor: "rgba(255, 90, 90, 0.1)",
-  },
-  sosButtonActive: {
-    borderColor: "black",
-    backgroundColor: "rgba(0,0,0,0.1)",
-  },
-  sosText: {
-    fontSize: 20,
-    fontFamily: "Lato-Bold",
-  },
-  sosTextInactive: {
-    color: "#FF5A5A",
-  },
-  sosTextActive: {
-    color: "black",
   },
 });

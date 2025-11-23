@@ -4,7 +4,8 @@ import { Route } from "@/lib/database";
 import { TrackingState } from "@/lib/useTrackingSession";
 import { TrackingMapView } from "./TrackingMapView";
 import { TrackingStatsOverlay } from "./TrackingStatsOverlay";
-
+import { useSOSController } from "@/hooks/useSOSController";
+import SOSConfirmation from "@/app/(sos)/SOSConfirmation";
 type TrackingViewProps = {
   loading: boolean;
   error: string | null;
@@ -63,7 +64,6 @@ export function TrackingView({
       <TrackingStatsOverlay
         elapsedTime={sessionState.elapsedTime}
         distanceTraveled={sessionState.distanceTraveled}
-        onSOS={onSOS}
       />
     </View>
   );
@@ -71,7 +71,7 @@ export function TrackingView({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 2,
     backgroundColor: "#00160B",
   },
   centerContainer: {
