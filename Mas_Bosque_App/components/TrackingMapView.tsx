@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 180, // Position it above the stats overlay
     right: 20,
-    zIndex: 10,
+    zIndex: 0, // Change to 1 maybe
   },
   markerIcon: {
     shadowColor: "#000",
