@@ -113,7 +113,6 @@ export default function RouteDetailScreen() {
 
   useEffect(fetchCommentSection, [id]);
 
-  // --- FIX: Standard useEffect for Keyboard Listeners ---
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       "keyboardDidShow",
@@ -170,7 +169,6 @@ export default function RouteDetailScreen() {
     });
   }, [route]);
 
-  // --- FIX: Updated handleSend logic ---
   const handleSend = async () => {
     if (!inputText.trim()) return;
     setIsPosting(true);
@@ -190,15 +188,11 @@ export default function RouteDetailScreen() {
       alert("Failed to post comment");
     } finally {
       setIsPosting(false);
-      // REMOVED: keyboardBehaviour() call here. It was causing duplicated listeners.
     }
   };
 
   const handleCancelReply = () => {
     setReplyingTo(null);
-    // Optional: Dismiss keyboard here too if you want to cancel typing completely
-    // Keyboard.dismiss();
-    // setKeyboardVisible(false);
   };
 
   const handleReplyPress = (comment: Comment) => {

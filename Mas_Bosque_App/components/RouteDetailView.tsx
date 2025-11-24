@@ -20,12 +20,12 @@ type RouteDetailViewProps = {
   error: string | null;
   route: Route | null;
   hasLocationPermission: boolean;
-  isDownloaded: boolean; // <-- Add new prop
+  isDownloaded: boolean;
   mapRef: React.RefObject<MapView>;
   onMapReady: () => void;
   bottomSheetRef: React.RefObject<BottomSheet>;
   snapPoints: string[];
-  onToggleDownload: () => void; // <-- Update prop name
+  onToggleDownload: () => void;
   onStart: () => void;
   onRefreshComments: () => void;
 
@@ -49,12 +49,12 @@ export function RouteDetailView({
   error,
   route,
   hasLocationPermission,
-  isDownloaded, // <-- Get new prop
+  isDownloaded,
   mapRef,
   onMapReady,
   bottomSheetRef,
   snapPoints,
-  onToggleDownload, // <-- Get new handler
+  onToggleDownload,
   onStart,
   onRefreshComments,
   comments,
