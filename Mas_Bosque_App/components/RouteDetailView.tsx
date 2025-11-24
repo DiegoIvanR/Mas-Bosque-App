@@ -13,6 +13,7 @@ import { router } from "expo-router";
 import { Route } from "@/lib/database";
 import { RouteMapView } from "./RouteMapView";
 import { RouteBottomSheet } from "./RouteBottomSheet";
+import { Comment } from "@/models/commentsModel";
 
 type RouteDetailViewProps = {
   loading: boolean;
@@ -26,6 +27,21 @@ type RouteDetailViewProps = {
   snapPoints: string[];
   onToggleDownload: () => void; // <-- Update prop name
   onStart: () => void;
+  onRefreshComments: () => void;
+
+  comments: Comment[] | null;
+  commentsLoading: boolean;
+  commentsError: string | null;
+
+  handleSend: () => Promise<void>;
+  handleCancelReply: () => void;
+  handleReplyPress: (comment: Comment) => void;
+  inputText: string;
+  replyingTo: Comment | null;
+  isPosting: boolean;
+  inputRef: any;
+  setInputText: React.Dispatch<React.SetStateAction<string>>;
+  isKeyboardVisible: boolean;
 };
 
 export function RouteDetailView({
@@ -40,6 +56,19 @@ export function RouteDetailView({
   snapPoints,
   onToggleDownload, // <-- Get new handler
   onStart,
+  onRefreshComments,
+  comments,
+  commentsLoading,
+  commentsError,
+  handleSend,
+  handleCancelReply,
+  handleReplyPress,
+  inputText,
+  replyingTo,
+  isPosting,
+  inputRef,
+  setInputText,
+  isKeyboardVisible,
 }: RouteDetailViewProps) {
   // 1. Handle Loading State
   if (loading) {
@@ -78,6 +107,19 @@ export function RouteDetailView({
         isDownloaded={isDownloaded} // <-- Pass prop down
         onToggleDownload={onToggleDownload} // <-- Pass handler down
         onStart={onStart}
+        onRefreshComments={onRefreshComments}
+        comments={comments}
+        commentsLoading={commentsLoading}
+        commentsError={commentsError}
+        handleSend={handleSend}
+        handleCancelReply={handleCancelReply}
+        handleReplyPress={handleReplyPress}
+        inputText={inputText}
+        replyingTo={replyingTo}
+        isPosting={isPosting}
+        inputRef={inputRef}
+        setInputText={setInputText}
+        isKeyboardVisible={isKeyboardVisible}
       />
     </GestureHandlerRootView>
   );
