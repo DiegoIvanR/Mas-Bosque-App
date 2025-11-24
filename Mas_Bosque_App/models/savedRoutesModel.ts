@@ -1,53 +1,110 @@
 import { supabase } from "@/lib/SupabaseClient";
-import * as Location from "expo-location";
+import { Route } from "@/lib/database";
 
-export const SOSModel = {
-  /**
-   * Creates the initial SOS record with location and timestamp.
-   * Returns the ID of the created record so we can update it later.
-   */
-  async createEmergencyAlert(): Promise<string | null> {
+// Define the shape of data this model returns
+// We ensure 'saved' is always true here
+export type RoutePreview = Omit<Route, "route_data"> & { saved: boolean };
+
+export const savedRoutesModel = {
+  async getRoutes(
+    page: number,
+    pageSize: number,
+    searchQuery: string = ""
+  ): Promise<{ data: RoutePreview[] | null; error: any }> {
     try {
-      const location = await Location.getCurrentPositionAsync({});
+      // 1. Get User
       const {
         data: { user },
+        error: userError,
       } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error("User not authenticated");
 
-      const { data, error } = await supabase
-        .from("SOS")
-        .insert({
-          user_id: user?.id,
-          latitud: location.coords.latitude,
-          longitud: location.coords.longitude,
-          timestamp_inicio: new Date().toISOString(),
-          // status: 'pending_details' // Optional: helps track state
-        })
-        .select("id") // IMPORTANT: Request the ID back
-        .single();
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      // 2. Query
+      let query = supabase
+        .from("saved_routes")
+        .select(
+          `
+          routes (
+            id, name, location, image_url, rating, difficulty, distance_km, time_minutes
+          )
+        `
+        )
+        .eq("user_id", user.id);
+
+      if (searchQuery && searchQuery.trim().length > 0) {
+        query = query.ilike("routes.name", `%${searchQuery}%`);
+      }
+
+      const { data, error } = await query.range(from, to);
 
       if (error) throw error;
-      return data.id;
+
+      // 3. Transformation
+      const transformedData: RoutePreview[] =
+        data?.map((item: any) => ({
+          ...item.routes, // Spread the route data
+          saved: true, // <--- FORCE THIS TO TRUE
+        })) || [];
+
+      return { data: transformedData, error: null };
     } catch (e) {
-      console.error("Model Error: Failed to create SOS", e);
-      return null;
+      console.error("SavedRoutesModel Error:", e);
+      return { data: null, error: e };
+    }
+  },
+  async saveRoute(routeId: string) {
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error("User not authenticated");
+
+      // FIX: Use upsert with ignoreDuplicates to prevent 23505 Error
+      const { data, error } = await supabase.from("saved_routes").upsert(
+        {
+          user_id: user.id,
+          route_id: routeId,
+        },
+        {
+          onConflict: "user_id, route_id", // The composite key
+          ignoreDuplicates: true, // If exists, do nothing (success)
+        }
+      );
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (e) {
+      console.error("SavedRoutesModel saveRoute Error:", e);
+      return { data: null, error: e };
     }
   },
 
-  /**
-   * Updates the existing SOS record with the specific emergency type.
-   */
-  async updateEmergencyType(sosId: string, type: string): Promise<boolean> {
+  async deleteRoute(routeId: string) {
     try {
-      const { error } = await supabase
-        .from("SOS")
-        .update({ tipo_emergencia: type }) // Assuming column name is 'tipo_emergencia'
-        .eq("id", sosId);
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error("User not authenticated");
+
+      const { data, error } = await supabase
+        .from("saved_routes")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("route_id", routeId);
 
       if (error) throw error;
-      return true;
+      return { data, error: null };
     } catch (e) {
-      console.error("Model Error: Failed to update SOS type", e);
-      return false;
+      console.error("SavedRoutesModel deleteRoute Error:", e);
+      return { data: null, error: e };
     }
   },
 };

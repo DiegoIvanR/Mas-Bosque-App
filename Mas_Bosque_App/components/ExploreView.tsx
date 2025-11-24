@@ -13,6 +13,7 @@ import SidebarSearchField from "@/components/SidebarSearchField";
 import { RoutePreview } from "@/models/ExploreModel";
 
 type ExploreViewProps = {
+  title: string;
   routes: RoutePreview[];
   loading: boolean;
   loadingMore: boolean;
@@ -26,6 +27,7 @@ type ExploreViewProps = {
 };
 
 export function ExploreView({
+  title,
   routes,
   loading,
   loadingMore,
@@ -100,7 +102,7 @@ export function ExploreView({
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header and Search always stay mounted */}
-      <Text style={styles.title}>Explore</Text>
+      <Text style={styles.title}>{title}</Text>
 
       <View style={styles.searchContainer}>
         <SidebarSearchField

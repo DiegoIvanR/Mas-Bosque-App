@@ -42,11 +42,23 @@ export default function ExploreScreen() {
 
         if (fetchError) throw fetchError;
 
+        // inside fetchRoutes function...
+
         if (data) {
           if (isReset) {
             setRoutes(data);
           } else {
-            setRoutes((prev) => [...prev, ...data]);
+            // CHANGE THIS SECTION:
+            setRoutes((prev) => {
+              // 1. Create a Set of existing IDs for fast lookup
+              const existingIds = new Set(prev.map((r) => r.id));
+
+              // 2. Filter out incoming data that already exists
+              const uniqueNewData = data.filter((r) => !existingIds.has(r.id));
+
+              // 3. Append only unique new items
+              return [...prev, ...uniqueNewData];
+            });
           }
 
           // Check if we reached the end
@@ -95,6 +107,7 @@ export default function ExploreScreen() {
   // --- RENDER ---
   return (
     <ExploreView
+      title="Explore"
       routes={routes}
       loading={loading}
       loadingMore={loadingMore}
