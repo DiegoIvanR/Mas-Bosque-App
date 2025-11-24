@@ -1,53 +1,68 @@
 import { supabase } from "@/lib/SupabaseClient";
-import * as Location from "expo-location";
+import { Route } from "@/lib/database";
 
-export const SOSModel = {
+// Define the shape of data this model returns
+export type RoutePreview = Omit<Route, "route_data">;
+
+export const savedRoutesModel = {
   /**
-   * Creates the initial SOS record with location and timestamp.
-   * Returns the ID of the created record so we can update it later.
+   * Fetches a paginated list of routes saved by the current user,
+   * optionally filtered by a search query.
    */
-  async createEmergencyAlert(): Promise<string | null> {
+  async getRoutes(
+    page: number,
+    pageSize: number,
+    searchQuery: string = ""
+  ): Promise<{ data: RoutePreview[] | null; error: any }> {
     try {
-      const location = await Location.getCurrentPositionAsync({});
+      // Get the current logged-in user
       const {
         data: { user },
+        error: userError,
       } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error("User not authenticated");
 
-      const { data, error } = await supabase
-        .from("SOS")
-        .insert({
-          user_id: user?.id,
-          latitud: location.coords.latitude,
-          longitud: location.coords.longitude,
-          timestamp_inicio: new Date().toISOString(),
-          // status: 'pending_details' // Optional: helps track state
-        })
-        .select("id") // IMPORTANT: Request the ID back
-        .single();
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+
+      // Query saved_routes joined with routes
+      let query = supabase
+        .from("saved_routes")
+        .select(
+          `
+          routes (
+            id,
+            name,
+            location,
+            image_url,
+            rating,
+            difficulty,
+            distance_km,
+            time_minutes
+          )
+        `
+        )
+        .eq("user_id", user.id);
+
+      // Apply search filter if it exists
+      if (searchQuery && searchQuery.trim().length > 0) {
+        query = query.ilike("routes.name", `%${searchQuery}%`);
+      }
+
+      // Apply pagination
+      const { data, error } = await query.range(from, to);
 
       if (error) throw error;
-      return data.id;
-    } catch (e) {
-      console.error("Model Error: Failed to create SOS", e);
-      return null;
-    }
-  },
 
-  /**
-   * Updates the existing SOS record with the specific emergency type.
-   */
-  async updateEmergencyType(sosId: string, type: string): Promise<boolean> {
-    try {
-      const { error } = await supabase
-        .from("SOS")
-        .update({ tipo_emergencia: type }) // Assuming column name is 'tipo_emergencia'
-        .eq("id", sosId);
+      // Flatten the nested 'routes' object
+      const flattenedData: RoutePreview[] =
+        data?.map((item: any) => item.routes) || [];
 
-      if (error) throw error;
-      return true;
+      return { data: flattenedData, error: null };
     } catch (e) {
-      console.error("Model Error: Failed to update SOS type", e);
-      return false;
+      console.error("SavedRoutesModel Error:", e);
+      return { data: null, error: e };
     }
   },
 };

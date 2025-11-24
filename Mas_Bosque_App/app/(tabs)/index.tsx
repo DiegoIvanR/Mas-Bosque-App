@@ -95,6 +95,7 @@ export default function ExploreScreen() {
   // --- RENDER ---
   return (
     <ExploreView
+      title="Explore"
       routes={routes}
       loading={loading}
       loadingMore={loadingMore}
