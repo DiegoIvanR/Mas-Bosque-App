@@ -2,20 +2,17 @@ import { supabase } from "@/lib/SupabaseClient";
 import { Route } from "@/lib/database";
 
 // Define the shape of data this model returns
-export type RoutePreview = Omit<Route, "route_data">;
+// We ensure 'saved' is always true here
+export type RoutePreview = Omit<Route, "route_data"> & { saved: boolean };
 
 export const savedRoutesModel = {
-  /**
-   * Fetches a paginated list of routes saved by the current user,
-   * optionally filtered by a search query.
-   */
   async getRoutes(
     page: number,
     pageSize: number,
     searchQuery: string = ""
   ): Promise<{ data: RoutePreview[] | null; error: any }> {
     try {
-      // Get the current logged-in user
+      // 1. Get User
       const {
         data: { user },
         error: userError,
@@ -26,42 +23,87 @@ export const savedRoutesModel = {
       const from = page * pageSize;
       const to = from + pageSize - 1;
 
-      // Query saved_routes joined with routes
+      // 2. Query
       let query = supabase
         .from("saved_routes")
         .select(
           `
           routes (
-            id,
-            name,
-            location,
-            image_url,
-            rating,
-            difficulty,
-            distance_km,
-            time_minutes
+            id, name, location, image_url, rating, difficulty, distance_km, time_minutes
           )
         `
         )
         .eq("user_id", user.id);
 
-      // Apply search filter if it exists
       if (searchQuery && searchQuery.trim().length > 0) {
         query = query.ilike("routes.name", `%${searchQuery}%`);
       }
 
-      // Apply pagination
       const { data, error } = await query.range(from, to);
 
       if (error) throw error;
 
-      // Flatten the nested 'routes' object
-      const flattenedData: RoutePreview[] =
-        data?.map((item: any) => item.routes) || [];
+      // 3. Transformation
+      const transformedData: RoutePreview[] =
+        data?.map((item: any) => ({
+          ...item.routes, // Spread the route data
+          saved: true, // <--- FORCE THIS TO TRUE
+        })) || [];
 
-      return { data: flattenedData, error: null };
+      return { data: transformedData, error: null };
     } catch (e) {
       console.error("SavedRoutesModel Error:", e);
+      return { data: null, error: e };
+    }
+  },
+  async saveRoute(routeId: string) {
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error("User not authenticated");
+
+      // FIX: Use upsert with ignoreDuplicates to prevent 23505 Error
+      const { data, error } = await supabase.from("saved_routes").upsert(
+        {
+          user_id: user.id,
+          route_id: routeId,
+        },
+        {
+          onConflict: "user_id, route_id", // The composite key
+          ignoreDuplicates: true, // If exists, do nothing (success)
+        }
+      );
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (e) {
+      console.error("SavedRoutesModel saveRoute Error:", e);
+      return { data: null, error: e };
+    }
+  },
+
+  async deleteRoute(routeId: string) {
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error("User not authenticated");
+
+      const { data, error } = await supabase
+        .from("saved_routes")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("route_id", routeId);
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (e) {
+      console.error("SavedRoutesModel deleteRoute Error:", e);
       return { data: null, error: e };
     }
   },
