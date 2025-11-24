@@ -1,15 +1,38 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useMemo } from "react";
 import { StyleSheet, Pressable, Platform, Animated } from "react-native";
 import MapView, {
   Polyline,
   Marker,
   AnimatedRegion,
-  Camera, // <-- Import Camera type
+  Camera,
 } from "react-native-maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Route } from "@/lib/database";
 import * as Location from "expo-location";
+
+// --- HELPER: Simple Haversine Distance ---
+// Calculates distance (in meters) between two lat/lon points
+// You can move this to a separate 'utils' file in your MVC structure
+function getDistanceFromLatLonInMeters(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+) {
+  const R = 6371e3; // metres
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+}
 
 type TrackingMapViewProps = {
   routePolyline: Route["route_data"];
@@ -31,11 +54,52 @@ export function TrackingMapView({
   const [mapHeading, setMapHeading] = useState(0);
   const animatedIconRotation = useRef(new Animated.Value(0)).current;
 
-  // --- 1. DEFINE A SHARED DURATION ---
-  // Both map and icon will use this for synchronized, snappy animations
   const ANIMATION_DURATION = 300;
 
-  // --- 2. UPDATE CAMERA EFFECT ---
+  // --- NEW: Calculate Route Progress ---
+  const { visitedCoords, remainingCoords } = useMemo(() => {
+    if (!location || !routePolyline || routePolyline.length === 0) {
+      return { visitedCoords: [], remainingCoords: routePolyline || [] };
+    }
+
+    // 1. Find the index of the closest point on the route to the user
+    let minDistance = Infinity;
+    let closestIndex = 0;
+
+    const userLat = location.coords.latitude;
+    const userLon = location.coords.longitude;
+
+    // Optimization: In a real app with huge routes, you might limit this search
+    // to a window around the previous closestIndex rather than looping the whole array.
+    for (let i = 0; i < routePolyline.length; i++) {
+      const p = routePolyline[i];
+      // routePolyline structure depends on your DB. Assuming {latitude, longitude} objects:
+      // If your routePolyline is array of arrays [lat, lon], adjust accordingly.
+      const dist = getDistanceFromLatLonInMeters(
+        userLat,
+        userLon,
+        p.latitude,
+        p.longitude
+      );
+
+      if (dist < minDistance) {
+        minDistance = dist;
+        closestIndex = i;
+      }
+    }
+
+    // 2. Split the array
+    // Visited: Start -> Closest Point
+    const visited = routePolyline.slice(0, closestIndex + 1);
+
+    // Remaining: Closest Point -> End
+    // We include closestIndex in both so there is no gap between the lines
+    const remaining = routePolyline.slice(closestIndex);
+
+    return { visitedCoords: visited, remainingCoords: remaining };
+  }, [location, routePolyline]);
+
+  // --- EXISTING EFFECTS (Camera, Icon, etc.) ---
   useEffect(() => {
     if (!location || !mapRef.current || followMode === "none") return;
     const cameraConfig = Platform.select({
@@ -46,7 +110,6 @@ export function TrackingMapView({
     let targetMapHeading = 0;
 
     if (followMode === "center") {
-      // 'center' mode
       targetMapHeading = 0;
       mapRef.current.animateCamera(
         {
@@ -55,31 +118,27 @@ export function TrackingMapView({
           heading: targetMapHeading,
           ...cameraConfig,
         },
-        { duration: ANIMATION_DURATION } // <-- USE SHARED DURATION
+        { duration: ANIMATION_DURATION }
       );
     }
-
     setMapHeading(targetMapHeading);
   }, [location, heading, followMode]);
 
-  // --- 3. UPDATE ICON ROTATION EFFECT ---
   useEffect(() => {
     if (heading && heading.trueHeading !== null) {
       const trueNorth = heading.trueHeading;
       const currentMapRotation = mapHeading;
       const iconOffset = -45;
-
       const targetRotation = trueNorth - currentMapRotation + iconOffset;
 
       Animated.timing(animatedIconRotation, {
         toValue: targetRotation,
-        duration: ANIMATION_DURATION, // <-- USE SHARED DURATION
+        duration: ANIMATION_DURATION,
         useNativeDriver: false,
       }).start();
     }
   }, [heading, mapHeading]);
 
-  // --- 4. NEW HANDLER for manual map changes ---
   const handleManualMapChange = async () => {
     if (followMode === "none" && mapRef.current) {
       try {
@@ -129,15 +188,31 @@ export function TrackingMapView({
         }}
         onRegionChangeComplete={handleManualMapChange}
       >
+        {/* RENDER STRATEGY:
+            1. Render Remaining path (bottom layer) 
+            2. Render Visited path (top layer)
+        */}
+
+        {/* Remaining Path (e.g., Grey or Faded Green) */}
         <Polyline
-          coordinates={routePolyline}
-          strokeColor="#04FF0C"
+          coordinates={remainingCoords}
+          strokeColor="rgba(4, 255, 12, 0.4)" // Faded original green
           strokeWidth={5}
+          zIndex={1}
+        />
+
+        {/* Visited Path (e.g., Bright Orange or Solid Green) */}
+        <Polyline
+          coordinates={visitedCoords}
+          strokeColor="#FF5A5A" // Strava-like orange/red, or keep it #04FF0C
+          strokeWidth={5}
+          zIndex={2}
         />
 
         <Marker.Animated
           anchor={{ x: 0.5, y: 0.5 }}
           coordinate={location.coords}
+          zIndex={3} // Ensure marker is above lines
         >
           <Animated.View style={animatedIconStyle}>
             <Ionicons
@@ -199,13 +274,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   iconButtonActive: {
-    backgroundColor: "#FFFFFF", // White when active
+    backgroundColor: "#FFFFFF",
   },
   recenterButtonContainer: {
     position: "absolute",
-    bottom: 180, // Position it above the stats overlay
+    bottom: 180,
     right: 20,
-    zIndex: 0, // Change to 1 maybe
+    zIndex: 0,
   },
   markerIcon: {
     shadowColor: "#000",
