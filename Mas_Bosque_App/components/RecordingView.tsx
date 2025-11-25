@@ -11,7 +11,7 @@ import { RecordingMapView } from "./RecordingMapView";
 import { TrackingStatsOverlay } from "./TrackingStatsOverlay";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import GoBackButton from "./GoBackButton";
+
 type RecordingViewProps = {
   state: RecordingState;
   onStart: () => void;
@@ -66,42 +66,48 @@ export function RecordingView({
           <View style={styles.activeControls}>
             <View style={styles.poiRow}>
               <TouchableOpacity
-                style={[styles.poiBtn, { backgroundColor: "#FF5A5A" }]}
+                style={[styles.poiBtn]}
                 onPress={() => onAddPoint("hazard")}
               >
                 <MaterialCommunityIcons
                   name="alert-circle"
                   size={24}
-                  color="white"
+                  color="#FF5A5A"
                 />
-                <Text style={styles.poiText}>Hazard</Text>
+                <Text style={[styles.poiText, { color: "#FF5A5A" }]}>
+                  Hazard
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.poiBtn, { backgroundColor: "#FFA500" }]}
+                style={[styles.poiBtn]}
                 onPress={() => onAddPoint("drop")}
               >
                 <MaterialCommunityIcons
                   name="arrow-down-bold-circle"
                   size={24}
-                  color="white"
+                  color="#FFA500"
                 />
-                <Text style={styles.poiText}>Drop</Text>
+                <Text style={[styles.poiText, { color: "#FFA500" }]}>Drop</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.poiBtn, { backgroundColor: "#04FF0C" }]}
+                style={[styles.poiBtn]}
                 onPress={() => onAddPoint("viewpoint")}
               >
-                <MaterialCommunityIcons name="camera" size={24} color="black" />
-                <Text style={[styles.poiText, { color: "black" }]}>View</Text>
+                <MaterialCommunityIcons
+                  name="camera"
+                  size={24}
+                  color="#04FF0C"
+                />
+                <Text style={[styles.poiText, { color: "#04FF0C" }]}>View</Text>
               </TouchableOpacity>
             </View>
 
             {/* --- FINISH BUTTON --- */}
             <TouchableOpacity style={styles.stopButton} onPress={onStop}>
               <Ionicons name="stop" size={24} color="white" />
-              <Text style={styles.stopText}>Finish Route</Text>
+              <Text style={styles.stopText}>Finish</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -138,6 +144,7 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: "center",
     paddingBottom: 10,
+    width: "100%",
   },
   topControl: {},
   startButton: {
@@ -158,12 +165,15 @@ const styles = StyleSheet.create({
 
   activeControls: {
     width: "90%",
-    gap: 20,
+    display: "flex",
+    flexDirection: "row",
+    alignContent: "space-between",
+    alignItems: "center",
   },
   poiRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
+    flex: 1, // <-- Instead of width: "50%"
+    marginRight: 10,
   },
   poiBtn: {
     flex: 1,
@@ -176,6 +186,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     elevation: 3,
+    color: "#00160B",
+    backgroundColor: "#00160B",
   },
   poiText: {
     color: "white",
@@ -191,12 +203,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 30,
     gap: 8,
-    alignSelf: "center",
-    width: "60%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    width: "30%",
     elevation: 5,
   },
-  stopText: { color: "white", fontFamily: "Lato-Bold", fontSize: 16 },
+  stopText: {
+    color: "white",
+    fontFamily: "Lato-Bold",
+    fontSize: 16,
+  },
 });
