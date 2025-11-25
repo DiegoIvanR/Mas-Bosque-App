@@ -11,7 +11,7 @@ import { RecordingMapView } from "./RecordingMapView";
 import { TrackingStatsOverlay } from "./TrackingStatsOverlay";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import GoBackButton from "./GoBackButton";
 type RecordingViewProps = {
   state: RecordingState;
   onStart: () => void;

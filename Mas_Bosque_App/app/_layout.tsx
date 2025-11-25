@@ -53,7 +53,7 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
-            name="record"
+            name="record/record"
             options={{
               presentation: "modal",
               animation: "slide_from_bottom",

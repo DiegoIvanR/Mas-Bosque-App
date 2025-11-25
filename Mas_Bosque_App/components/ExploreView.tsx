@@ -13,6 +13,7 @@ import RouteCard from "@/components/RouteCard";
 import SidebarSearchField from "@/components/SidebarSearchField";
 import { RoutePreview } from "@/models/ExploreModel";
 import { router } from "expo-router";
+import { MaterialIcons } from "@expo/vector-icons";
 type ExploreViewProps = {
   title: string;
   routes: RoutePreview[];
@@ -26,7 +27,7 @@ type ExploreViewProps = {
   onRefresh: () => void;
   onLoadMore: () => void;
 };
-
+//
 export function ExploreView({
   title,
   routes,
@@ -107,10 +108,12 @@ export function ExploreView({
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header and Search always stay mounted */}
-      <Text style={styles.title}>{title}</Text>
-      <Pressable onPress={handlePress}>
-        <Text>ADD ROUTE</Text>
-      </Pressable>
+      <View style={styles.header}>
+        <Text style={styles.title}>{title}</Text>
+        <Pressable onPress={handlePress} hitSlop={10} style={styles.add}>
+          <MaterialIcons name={"add"} size={24} color="#FFFFFF" />
+        </Pressable>
+      </View>
       <View style={styles.searchContainer}>
         <SidebarSearchField
           value={searchQuery}
@@ -130,6 +133,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#00160B",
   },
+  header: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    alignContent: "space-between",
+  },
   centerContainer: {
     // Reuse this for the spinner area
     flex: 1,
@@ -143,6 +152,13 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 10,
     fontFamily: "Lato-Bold",
+  },
+  add: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 10,
+    position: "absolute",
+    right: 0,
   },
   searchContainer: {
     paddingHorizontal: 20,
