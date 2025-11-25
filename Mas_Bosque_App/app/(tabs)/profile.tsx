@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {Text, View, Image, StyleSheet} from "react-native";
+import {Text, View, StyleSheet} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {router} from "expo-router";
 import {useAuth} from "@/lib/auth";

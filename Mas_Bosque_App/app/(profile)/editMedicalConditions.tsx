@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, TextInput, Pressable, StyleSheet, ViewStyle, TextStyle, Alert, ScrollView} from 'react-native';
+import {Text, TextInput, Pressable, StyleSheet, ViewStyle, TextStyle, Alert, ScrollView} from 'react-native';
 import {supabase} from '@/lib/SupabaseClient'; // adjust path
 import {router} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
