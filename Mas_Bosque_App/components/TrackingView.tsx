@@ -10,6 +10,7 @@ type TrackingViewProps = {
   loading: boolean;
   error: string | null;
   routePolyline: Route["route_data"] | null;
+  interestPoints: Route["interest_points"] | null;
   sessionState: TrackingState;
   onExit: () => void;
   onSOS: () => void;
@@ -19,6 +20,7 @@ export function TrackingView({
   loading,
   error,
   routePolyline,
+  interestPoints,
   sessionState,
   onExit,
   onSOS,
@@ -57,6 +59,7 @@ export function TrackingView({
     <View style={styles.container}>
       <TrackingMapView
         routePolyline={routePolyline}
+        interestPoints={interestPoints}
         location={sessionState.location}
         heading={sessionState.heading}
         onExit={onExit}

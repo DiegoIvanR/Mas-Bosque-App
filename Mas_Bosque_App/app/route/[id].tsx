@@ -11,14 +11,15 @@ import { useLocalSearchParams, router } from "expo-router";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { ToastAndroid, Keyboard } from "react-native";
 
-import { supabase } from "@/lib/SupabaseClient";
 import {
   Route,
   getLocalRouteById,
   saveRouteLocally,
   checkIfRouteIsSaved,
-  deleteLocalRouteById,
+  deleteLocalRouteById, // Importing from database.ts now
 } from "@/lib/database";
+import { fetchRouteSupabase } from "@/models/routesModel";
+
 import { RouteDetailView } from "@/components/RouteDetailView";
 import { Comment, getComments, addComment } from "@/models/commentsModel";
 
@@ -33,6 +34,7 @@ export default function RouteDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [hasLocationPermission, setHasLocationPermission] = useState(false);
   const [isDownloaded, setIsDownloaded] = useState(false);
+
   const mapRef = useRef<MapView>(null);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["25%", "60%"], []);
@@ -41,8 +43,6 @@ export default function RouteDetailScreen() {
   const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
   const [isPosting, setIsPosting] = useState(false);
   const inputRef = useRef<any>(null);
-
-  // 1. Keyboard State
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
   const [comments, setComments] = useState<Comment[]>([]);
@@ -60,6 +60,7 @@ export default function RouteDetailScreen() {
     })();
   }, []);
 
+  // --- FETCH ROUTE LOGIC ---
   useEffect(() => {
     if (!id) return;
     async function fetchRoute() {
@@ -68,19 +69,20 @@ export default function RouteDetailScreen() {
       try {
         const isSaved = await checkIfRouteIsSaved(id);
         setIsDownloaded(isSaved);
+
         let data: Route | null = null;
+
         if (isOffline === "true") {
+          // Fetch from SQLite (Offline)
+          // This now includes parsed interest_points from the JSON column
           data = await getLocalRouteById(id);
           if (!data) throw new Error("Route not found in local storage.");
         } else {
-          const { data: supabaseData, error } = await supabase
-            .from("routes")
-            .select("*")
-            .eq("id", id)
-            .single();
-          if (error) throw error;
-          data = supabaseData as Route;
+          // Fetch from Supabase (Online)
+          // This includes interest_points from the joined table
+          data = await fetchRouteSupabase(id);
         }
+
         setRoute(data);
       } catch (e: any) {
         setError(e.message || "Failed to fetch route data.");
@@ -91,6 +93,7 @@ export default function RouteDetailScreen() {
     fetchRoute();
   }, [id, isOffline]);
 
+  // --- COMMENTS LOGIC ---
   const fetchCommentSection = () => {
     if (!id) return;
 
@@ -107,7 +110,6 @@ export default function RouteDetailScreen() {
         setCommentsLoading(false);
       }
     }
-
     fetchComments();
   };
 
@@ -151,6 +153,7 @@ export default function RouteDetailScreen() {
       }
     } else {
       try {
+        // This now saves the interest_points array as JSON in SQLite
         await saveRouteLocally(route);
         setIsDownloaded(true);
         ToastAndroid.show("Route saved for offline use!", ToastAndroid.SHORT);
@@ -176,12 +179,8 @@ export default function RouteDetailScreen() {
       await addComment(route!.id, inputText, replyingTo?.id || null);
       setInputText("");
       setReplyingTo(null);
-
-      // 1. Dismiss Keyboard
       Keyboard.dismiss();
-      // 2. Force state update immediately (don't wait for listener)
       setKeyboardVisible(false);
-
       fetchCommentSection();
     } catch (e) {
       console.error(e);

@@ -1,8 +1,8 @@
 import React from "react";
-import { StyleSheet, Platform, Pressable } from "react-native";
-import MapView, { Polyline } from "react-native-maps";
+import { StyleSheet, Platform, Pressable, View } from "react-native";
+import MapView, { Polyline, Marker } from "react-native-maps";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Route } from "@/lib/database";
 
@@ -95,6 +95,33 @@ const darkMapStyle = [
   },
 ];
 
+// Helper functions for marker styling
+const getMarkerIcon = (type: string) => {
+  switch (type) {
+    case "hazard":
+      return "alert-circle";
+    case "drop":
+      return "arrow-down-bold-circle";
+    case "viewpoint":
+      return "camera";
+    default:
+      return "map-marker";
+  }
+};
+
+const getMarkerColor = (type: string) => {
+  switch (type) {
+    case "hazard":
+      return "#FF5A5A"; // Red
+    case "drop":
+      return "#FFA500"; // Orange
+    case "viewpoint":
+      return "#04FF0C"; // Green
+    default:
+      return "#FFFFFF";
+  }
+};
+
 export function RouteMapView({
   route,
   hasLocationPermission,
@@ -115,6 +142,33 @@ export function RouteMapView({
           strokeColor="#04FF0C" // Bright green
           strokeWidth={5}
         />
+
+        {/* Render Interest Points */}
+        {route.interest_points?.map((point, index) => (
+          <Marker
+            // Use ID if available, otherwise fallback to index key
+            key={point.id || index}
+            coordinate={{
+              latitude: point.latitude,
+              longitude: point.longitude,
+            }}
+            title={point.type.toUpperCase()}
+            description={point.note}
+          >
+            <View
+              style={[
+                styles.markerBase,
+                { backgroundColor: getMarkerColor(point.type) },
+              ]}
+            >
+              <MaterialCommunityIcons
+                name={getMarkerIcon(point.type) as any}
+                size={16}
+                color="black"
+              />
+            </View>
+          </Marker>
+        ))}
       </MapView>
 
       {/* Floating Back Button */}
@@ -147,5 +201,19 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: "center",
     alignItems: "center",
+  },
+  // Style for the custom marker bubble
+  markerBase: {
+    padding: 5,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: "white",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 4,
   },
 });

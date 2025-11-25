@@ -6,12 +6,13 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import RouteCard from "@/components/RouteCard";
 import SidebarSearchField from "@/components/SidebarSearchField";
 import { RoutePreview } from "@/models/ExploreModel";
-
+import { router } from "expo-router";
 type ExploreViewProps = {
   title: string;
   routes: RoutePreview[];
@@ -39,6 +40,10 @@ export function ExploreView({
   onRefresh,
   onLoadMore,
 }: ExploreViewProps) {
+  const handlePress = () => {
+    router.push(`/record/record`);
+  };
+
   // Helper to render the content body
   const renderContent = () => {
     // 1. Show Spinner only in the body area
@@ -103,7 +108,9 @@ export function ExploreView({
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header and Search always stay mounted */}
       <Text style={styles.title}>{title}</Text>
-
+      <Pressable onPress={handlePress}>
+        <Text>ADD ROUTE</Text>
+      </Pressable>
       <View style={styles.searchContainer}>
         <SidebarSearchField
           value={searchQuery}

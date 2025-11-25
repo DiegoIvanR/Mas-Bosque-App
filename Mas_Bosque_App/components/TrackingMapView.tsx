@@ -1,19 +1,12 @@
 import React, { useRef, useState, useEffect, useMemo } from "react";
-import { StyleSheet, Pressable, Platform, Animated } from "react-native";
-import MapView, {
-  Polyline,
-  Marker,
-  AnimatedRegion,
-  Camera,
-} from "react-native-maps";
+import { StyleSheet, Pressable, Platform, Animated, View } from "react-native";
+import MapView, { Polyline, Marker } from "react-native-maps";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Route } from "@/lib/database";
 import * as Location from "expo-location";
 
 // --- HELPER: Simple Haversine Distance ---
-// Calculates distance (in meters) between two lat/lon points
-// You can move this to a separate 'utils' file in your MVC structure
 function getDistanceFromLatLonInMeters(
   lat1: number,
   lon1: number,
@@ -34,8 +27,36 @@ function getDistanceFromLatLonInMeters(
   return R * c;
 }
 
+// Helper functions for marker styling (Consistent with RouteMapView)
+const getMarkerIcon = (type: string) => {
+  switch (type) {
+    case "hazard":
+      return "alert-circle";
+    case "drop":
+      return "arrow-down-bold-circle";
+    case "viewpoint":
+      return "camera";
+    default:
+      return "map-marker";
+  }
+};
+
+const getMarkerColor = (type: string) => {
+  switch (type) {
+    case "hazard":
+      return "#FF5A5A"; // Red
+    case "drop":
+      return "#FFA500"; // Orange
+    case "viewpoint":
+      return "#04FF0C"; // Green
+    default:
+      return "#FFFFFF";
+  }
+};
+
 type TrackingMapViewProps = {
   routePolyline: Route["route_data"];
+  interestPoints: Route["interest_points"] | null; // Added prop for Interest Points
   location: Location.LocationObject;
   heading: Location.HeadingObject;
   onExit: () => void;
@@ -45,6 +66,7 @@ type FollowMode = "none" | "center";
 
 export function TrackingMapView({
   routePolyline,
+  interestPoints,
   location,
   heading,
   onExit,
@@ -56,25 +78,20 @@ export function TrackingMapView({
 
   const ANIMATION_DURATION = 300;
 
-  // --- NEW: Calculate Route Progress ---
+  // --- Calculate Route Progress ---
   const { visitedCoords, remainingCoords } = useMemo(() => {
     if (!location || !routePolyline || routePolyline.length === 0) {
       return { visitedCoords: [], remainingCoords: routePolyline || [] };
     }
 
-    // 1. Find the index of the closest point on the route to the user
     let minDistance = Infinity;
     let closestIndex = 0;
 
     const userLat = location.coords.latitude;
     const userLon = location.coords.longitude;
 
-    // Optimization: In a real app with huge routes, you might limit this search
-    // to a window around the previous closestIndex rather than looping the whole array.
     for (let i = 0; i < routePolyline.length; i++) {
       const p = routePolyline[i];
-      // routePolyline structure depends on your DB. Assuming {latitude, longitude} objects:
-      // If your routePolyline is array of arrays [lat, lon], adjust accordingly.
       const dist = getDistanceFromLatLonInMeters(
         userLat,
         userLon,
@@ -88,18 +105,13 @@ export function TrackingMapView({
       }
     }
 
-    // 2. Split the array
-    // Visited: Start -> Closest Point
     const visited = routePolyline.slice(0, closestIndex + 1);
-
-    // Remaining: Closest Point -> End
-    // We include closestIndex in both so there is no gap between the lines
     const remaining = routePolyline.slice(closestIndex);
 
     return { visitedCoords: visited, remainingCoords: remaining };
   }, [location, routePolyline]);
 
-  // --- EXISTING EFFECTS (Camera, Icon, etc.) ---
+  // --- EXISTING EFFECTS ---
   useEffect(() => {
     if (!location || !mapRef.current || followMode === "none") return;
     const cameraConfig = Platform.select({
@@ -188,31 +200,54 @@ export function TrackingMapView({
         }}
         onRegionChangeComplete={handleManualMapChange}
       >
-        {/* RENDER STRATEGY:
-            1. Render Remaining path (bottom layer) 
-            2. Render Visited path (top layer)
-        */}
-
-        {/* Remaining Path (e.g., Grey or Faded Green) */}
+        {/* Remaining Path */}
         <Polyline
           coordinates={remainingCoords}
-          strokeColor="rgba(4, 255, 12, 0.4)" // Faded original green
+          strokeColor="rgba(4, 255, 12, 0.4)"
           strokeWidth={5}
           zIndex={1}
         />
 
-        {/* Visited Path (e.g., Bright Orange or Solid Green) */}
+        {/* Visited Path */}
         <Polyline
           coordinates={visitedCoords}
-          strokeColor="#FF5A5A" // Strava-like orange/red, or keep it #04FF0C
+          strokeColor="#FF5A5A"
           strokeWidth={5}
           zIndex={2}
         />
 
+        {/* Interest Points Markers */}
+        {interestPoints?.map((point, index) => (
+          <Marker
+            key={point.id || index}
+            coordinate={{
+              latitude: point.latitude,
+              longitude: point.longitude,
+            }}
+            title={point.type.toUpperCase()}
+            description={point.note}
+            zIndex={4}
+          >
+            <View
+              style={[
+                styles.markerBase,
+                { backgroundColor: getMarkerColor(point.type) },
+              ]}
+            >
+              <MaterialCommunityIcons
+                name={getMarkerIcon(point.type) as any}
+                size={16}
+                color="black"
+              />
+            </View>
+          </Marker>
+        ))}
+
+        {/* User Marker */}
         <Marker.Animated
           anchor={{ x: 0.5, y: 0.5 }}
           coordinate={location.coords}
-          zIndex={3} // Ensure marker is above lines
+          zIndex={3}
         >
           <Animated.View style={animatedIconStyle}>
             <Ionicons
@@ -291,5 +326,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  markerBase: {
+    padding: 5,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: "white",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 2,
+    elevation: 4,
   },
 });

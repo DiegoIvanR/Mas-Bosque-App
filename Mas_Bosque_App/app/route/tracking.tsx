@@ -5,7 +5,7 @@ import { supabase } from "@/lib/SupabaseClient";
 import { Route } from "@/lib/database";
 import { useTrackingSession } from "@/lib/useTrackingSession";
 import { TrackingView } from "@/components/TrackingView";
-
+import { fetchRouteSupabase } from "@/models/routesModel";
 // --- CONTROLLER ---
 export default function TrackingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -13,6 +13,9 @@ export default function TrackingScreen() {
   // State for data fetching
   const [routePolyline, setRoutePolyline] = useState<
     Route["route_data"] | null
+  >(null);
+  const [interestPoints, setInterestPoints] = useState<
+    Route["interest_points"] | null
   >(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,16 +36,12 @@ export default function TrackingScreen() {
       setError(null);
       try {
         // Only fetch the coordinates to save bandwidth
-        const { data, error } = await supabase
-          .from("routes")
-          .select("route_data")
-          .eq("id", id)
-          .single();
+        const data = await fetchRouteSupabase(id);
 
-        if (error) throw error;
         if (!data || !data.route_data) throw new Error("Route data not found.");
 
         setRoutePolyline(data.route_data);
+        setInterestPoints(data.interest_points);
       } catch (e: any) {
         setError(e.message || "Failed to fetch route polyline.");
       } finally {
@@ -71,6 +70,7 @@ export default function TrackingScreen() {
       loading={loading}
       error={error}
       routePolyline={routePolyline}
+      interestPoints={interestPoints}
       sessionState={sessionState}
       onExit={handleExitSession}
       onSOS={handleSOS}
