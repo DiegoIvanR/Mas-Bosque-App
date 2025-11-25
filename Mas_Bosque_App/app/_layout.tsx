@@ -60,6 +60,14 @@ export default function RootLayout() {
               headerShown: false, // Hide the default header
             }}
           />
+          <Stack.Screen
+            name="(profile)/edit"
+            options={{
+              presentation: "modal",
+              animation: "slide_from_bottom",
+              headerShown: false, // Hide the default header
+            }}
+          />
         </Stack>
       </GestureHandlerRootView>
     </AuthProvider>
