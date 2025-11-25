@@ -82,7 +82,7 @@ export default function SignupEMContact() {
     }
     if (!profileData) {
       setError(
-        "An unexpected error occurred (profile not saved). Please try again."
+        "An unexpected error occurred ((profile) not saved). Please try again."
       );
       setLoading(false);
       return;
