@@ -6,85 +6,75 @@ import { saveRecordedSession, uploadSessionToSupabase } from "@/lib/database";
 import { router } from "expo-router";
 import GoBackButton from "@/components/GoBackButton";
 import { View, StyleSheet } from "react-native";
+import RouteSubmissionForm from "@/components/RouteSubmissionForm";
+
 export default function RecordScreen() {
   const session = useRecordingSession();
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const [showForm, setShowForm] = useState(false);
 
   const handleStart = () => {
     session.startRecording();
   };
 
   const handleStop = async () => {
-    Alert.alert(
-      "Finish Recording?",
-      "Are you sure you want to stop tracking?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Finish & Save",
-          onPress: async () => {
-            await finishAndSave();
-          },
-        },
-      ]
-    );
+    // Instead of Alert directly, we just open the form
+    // You might want a small confirmation here, or just stop:
+    session.stopRecording();
+    setShowForm(true);
   };
 
-  const finishAndSave = async () => {
+  const handleCancelForm = () => {
+    // Resume recording? Or just close modal?
+    // If you want to discard:
+    setShowForm(false);
+    // Note: session is stopped. You might want to reset it or handle 'resume' logic.
+  };
+
+  // Called when user hits "Save" on the modal
+  const handleFormSubmit = async (formData: {
+    name: string;
+    difficulty: any;
+    imageUri: string | null;
+  }) => {
+    setShowForm(false);
+
     if (session.routePath.length === 0) {
       Alert.alert("Error", "No route data recorded.");
-      session.stopRecording();
       return;
     }
 
     try {
-      session.stopRecording();
-
       setIsProcessing(true);
       setLoadingMessage("Saving locally...");
 
       const recordedSession = {
-        // No ID passed here, SQLite auto-increments
+        // SQLite auto-increments ID
         start_time: session.startTime || new Date().toISOString(),
         end_time: new Date().toISOString(),
         distance_km: session.distanceTraveled,
         duration_seconds: session.elapsedTime,
         route_data: session.routePath,
         interest_points: session.interestPoints,
+        // NEW FORM DATA
+        name: formData.name,
+        difficulty: formData.difficulty,
+        local_image_uri: formData.imageUri || undefined,
       };
 
-      // Save and get the numeric ID back
+      // 1. Save Local
       const localSessionId = await saveRecordedSession(recordedSession);
 
-      setLoadingMessage("Saved!");
+      setLoadingMessage("Saved! Uploading...");
 
-      Alert.alert(
-        "Route Saved Locally",
-        "Do you want to upload this route to the cloud now?",
-        [
-          {
-            text: "Later",
-            style: "cancel",
-            onPress: () => {
-              setIsProcessing(false);
-              router.replace("/(tabs)/saved");
-            },
-          },
-          {
-            text: "Upload Now",
-            onPress: async () => {
-              // Pass the numeric ID to the upload function
-              await performUpload(localSessionId);
-            },
-          },
-        ]
-      );
+      // 2. Upload to Supabase (includes Image upload now)
+      await performUpload(localSessionId);
     } catch (e: any) {
       console.error(e);
       setIsProcessing(false);
-      Alert.alert("Error", "Failed to save session locally.");
+      Alert.alert("Error", "Failed to save session.");
     }
   };
 
@@ -99,8 +89,9 @@ export default function RecordScreen() {
     } catch (e: any) {
       Alert.alert(
         "Upload Failed",
-        "Could not upload. Data is saved locally and can be uploaded later."
+        "Data saved locally. We will try uploading later."
       );
+      router.replace("/(tabs)/saved");
     } finally {
       setIsProcessing(false);
     }
@@ -115,19 +106,17 @@ export default function RecordScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Add the GoBackButton */}
       <GoBackButton
         style={{
           position: "absolute",
-          top: 20, // Adjust for safe area
-          left: 20, // Adjust for padding
+          top: 20,
+          left: 20,
           zIndex: 100,
           transform: [{ rotate: "270deg" }],
         }}
         backgroundColor={"rgba(30, 30, 30, 0.85)"}
       />
 
-      {/* Existing RecordingView */}
       <RecordingView
         state={session}
         onStart={handleStart}
@@ -135,6 +124,13 @@ export default function RecordScreen() {
         onAddPoint={handleAddPoint}
         isProcessing={isProcessing}
         loadingMessage={loadingMessage}
+      />
+
+      {/* The Form View Layer */}
+      <RouteSubmissionForm
+        visible={showForm}
+        onCancel={handleCancelForm}
+        onSubmit={handleFormSubmit}
       />
     </View>
   );

@@ -1,18 +1,24 @@
 import * as SQLite from "expo-sqlite";
 import { supabase } from "./SupabaseClient";
+import * as FileSystem from "expo-file-system/legacy";
+import { decode } from "base64-arraybuffer"; // You might need: npm install base64-arraybuffer
 
 // --- TYPES ---
 
 // 1. Shared Interest Point Interface
 
 export interface RecordedSession {
-  id?: number; // Optional because SQLite generates it
+  id?: number;
   start_time: string;
   end_time: string | null;
   distance_km: number;
   duration_seconds: number;
   route_data: { latitude: number; longitude: number }[];
   interest_points: InterestPoint[];
+  // NEW FIELDS
+  name?: string;
+  difficulty?: "Easy" | "Medium" | "Hard";
+  local_image_uri?: string;
 }
 export interface InterestPoint {
   id: string | number; // String for Supabase UUID, Number for Local Auto-increment
@@ -100,7 +106,10 @@ export const initDatabase = async () => {
       distance_km REAL,
       duration_seconds INTEGER,
       route_data TEXT NOT NULL,
-      synced_to_supabase INTEGER DEFAULT 0
+      synced_to_supabase INTEGER DEFAULT 0,
+      name TEXT, 
+      difficulty TEXT,
+      local_image_uri TEXT
     );
 
     CREATE TABLE IF NOT EXISTS interest_points (
@@ -237,14 +246,17 @@ export const saveRecordedSession = async (session: RecordedSession) => {
     // 1. Insert Session (SQLite generates ID)
     const result = await db.runAsync(
       `INSERT INTO recorded_sessions 
-       (start_time, end_time, distance_km, duration_seconds, route_data, synced_to_supabase)
-       VALUES (?, ?, ?, ?, ?, 0)`,
+       (start_time, end_time, distance_km, duration_seconds, route_data, synced_to_supabase, name, difficulty, local_image_uri)
+       VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)`,
       [
         session.start_time,
         session.end_time || new Date().toISOString(),
         session.distance_km,
         session.duration_seconds,
         JSON.stringify(session.route_data),
+        session.name || "Untitled Route", // NEW
+        session.difficulty || "Medium", // NEW
+        session.local_image_uri || null, // NEW
       ]
     );
 
@@ -277,7 +289,6 @@ export const saveRecordedSession = async (session: RecordedSession) => {
 
 export const uploadSessionToSupabase = async (localSessionId: number) => {
   try {
-    // 1. Fetch Local Data
     const session = await db.getFirstAsync<any>(
       "SELECT * FROM recorded_sessions WHERE id = ?",
       localSessionId
@@ -289,20 +300,51 @@ export const uploadSessionToSupabase = async (localSessionId: number) => {
 
     if (!session) throw new Error("Local session not found");
 
-    // 2. Prepare Route Payload
+    let publicImageUrl = "";
+
+    // --- FIX STARTS HERE ---
+    if (session.local_image_uri) {
+      const fileName = `${session.start_time}_${localSessionId}.jpg`;
+
+      // 1. Read as Base64 String (using string literal to avoid 'undefined' error)
+      const base64 = await FileSystem.readAsStringAsync(
+        session.local_image_uri,
+        {
+          encoding: "base64", // <--- Use string 'base64', not the Enum
+        }
+      );
+
+      // 2. Upload using ArrayBuffer (decode)
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("route_images")
+        .upload(fileName, decode(base64), {
+          contentType: "image/jpeg",
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // 3. Get Public URL
+      const { data: urlData } = supabase.storage
+        .from("route_images")
+        .getPublicUrl(fileName);
+
+      publicImageUrl = urlData.publicUrl;
+    }
+
+    // 2. Prepare Route Payload with Form Data
     const routePayload = {
-      name: `Recorded Route ${new Date(
-        session.start_time
-      ).toLocaleDateString()}`,
-      location: "Unknown",
+      name: session.name, // From DB
+      location: "Guadalajara, MX", // You can reverse geocode this if needed
+      image_url: publicImageUrl, // From Storage
       rating: 0,
-      difficulty: "Medium",
+      difficulty: session.difficulty, // From DB
       distance_km: session.distance_km,
       time_minutes: Math.floor(session.duration_seconds / 60),
       route_data: JSON.parse(session.route_data),
     };
 
-    // 3. Upload Route & GET THE NEW UUID
+    // 3. Insert into Routes
     const { data: newRoute, error: routeError } = await supabase
       .from("routes")
       .insert([routePayload])
