@@ -57,6 +57,7 @@ export default function RootLayout() {
             options={{
               presentation: "modal",
               animation: "slide_from_bottom",
+              headerShown: false, // Hide the default header
             }}
           />
         </Stack>

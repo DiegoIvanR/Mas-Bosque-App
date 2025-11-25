@@ -4,7 +4,8 @@ import { useRecordingSession } from "@/lib/useRecordingSession";
 import { RecordingView } from "@/components/RecordingView";
 import { saveRecordedSession, uploadSessionToSupabase } from "@/lib/database";
 import { router } from "expo-router";
-
+import GoBackButton from "@/components/GoBackButton";
+import { View, StyleSheet } from "react-native";
 export default function RecordScreen() {
   const session = useRecordingSession();
 
@@ -113,13 +114,41 @@ export default function RecordScreen() {
   };
 
   return (
-    <RecordingView
-      state={session}
-      onStart={handleStart}
-      onStop={handleStop}
-      onAddPoint={handleAddPoint}
-      isProcessing={isProcessing}
-      loadingMessage={loadingMessage}
-    />
+    <View style={styles.container}>
+      {/* Add the GoBackButton */}
+      <GoBackButton
+        style={{
+          position: "absolute",
+          top: 20, // Adjust for safe area
+          left: 20, // Adjust for padding
+          zIndex: 100,
+          transform: [{ rotate: "270deg" }],
+        }}
+        backgroundColor={"rgba(30, 30, 30, 0.85)"}
+      />
+
+      {/* Existing RecordingView */}
+      <RecordingView
+        state={session}
+        onStart={handleStart}
+        onStop={handleStop}
+        onAddPoint={handleAddPoint}
+        isProcessing={isProcessing}
+        loadingMessage={loadingMessage}
+      />
+    </View>
   );
 }
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#00160B",
+  },
+  goBackButton: {
+    position: "absolute",
+    top: 20, // Adjust for safe area
+    left: 20, // Adjust for padding
+    zIndex: 100,
+    transform: "90",
+  },
+});

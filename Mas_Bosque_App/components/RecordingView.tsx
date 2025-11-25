@@ -52,13 +52,15 @@ export function RecordingView({
       />
 
       {/* 2. Controls */}
-      <SafeAreaView style={styles.topControls}>
+      <SafeAreaView style={styles.controls}>
         {!state.isRecording ? (
           // --- START BUTTON ---
-          <TouchableOpacity style={styles.startButton} onPress={onStart}>
-            <Ionicons name="play" size={24} color="black" />
-            <Text style={styles.startText}>Start Recording</Text>
-          </TouchableOpacity>
+          <View style={styles.topControl}>
+            <TouchableOpacity style={styles.startButton} onPress={onStart}>
+              <Ionicons name="play" size={24} color="black" />
+              <Text style={styles.startText}>Start Recording</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
           // --- RECORDING CONTROLS ---
           <View style={styles.activeControls}>
@@ -129,13 +131,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 
-  topControls: {
+  controls: {
     position: "absolute",
-    top: 20,
-    left: 20,
-    right: 20,
+    bottom: 140, // <-- sits above TrackingStatsOverlay
+    left: 0,
+    right: 0,
     alignItems: "center",
+    paddingBottom: 10,
   },
+  topControl: {},
   startButton: {
     backgroundColor: "#04FF0C",
     flexDirection: "row",
@@ -153,7 +157,7 @@ const styles = StyleSheet.create({
   startText: { fontFamily: "Lato-Bold", fontSize: 18 },
 
   activeControls: {
-    width: "100%",
+    width: "90%",
     gap: 20,
   },
   poiRow: {
