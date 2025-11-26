@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { communityModel, RoutePreview } from "@/models/communityModel"; // Import Model
 import { ExploreView } from "@/components/ExploreViews/ExploreView"; // Import View
-
+import { router } from "expo-router";
+import LoadingScreen from "@/components/LoadingScreen";
+import ErrorScreen from "@/components//ErrorScreen";
+import ExploreListView from "@/components/ExploreViews/ExploreListView";
 const PAGE_SIZE = 10;
 
 export default function ExploreScreen() {
@@ -104,20 +107,45 @@ export default function ExploreScreen() {
     setLoadingMore(false);
   };
 
+  const handlePress = () => {
+    router.push(`/record/record`);
+  };
+
+  // Helper to render the content body
+  const renderContent = () => {
+    // 1. Show Spinner only in the body area
+    if (loading) {
+      return <LoadingScreen />;
+    }
+
+    // 2. Show Error if needed
+    if (error && !(routes.length > 0)) {
+      return <ErrorScreen error={error} />;
+    }
+
+    // 3. Show the List
+    return (
+      <ExploreListView
+        routes={routes}
+        loading={loading}
+        loadingMore={loadingMore}
+        isRefreshing={isRefreshing}
+        searchQuery={searchQuery}
+        onRefresh={handleRefresh}
+        onLoadMore={handleLoadMore}
+      />
+    );
+  };
+
   // --- RENDER ---
   return (
     <ExploreView
       title="Community"
-      routes={routes}
-      loading={loading}
-      loadingMore={loadingMore}
-      isRefreshing={isRefreshing}
-      error={error}
       searchQuery={searchQuery}
       hasRoutes={routes.length > 0}
       onSearchChange={setSearchQuery}
-      onRefresh={handleRefresh}
-      onLoadMore={handleLoadMore}
+      handlePress={handlePress}
+      renderContent={renderContent}
     />
   );
 }

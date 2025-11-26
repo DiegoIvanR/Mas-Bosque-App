@@ -46,7 +46,7 @@ export default function LoginScreen() {
     setError("");
     let data: any | null = null;
     try {
-      data = logInSupabase(email, password);
+      data = await logInSupabase(email, password);
     } catch (e: any) {
       setError(e);
     }
