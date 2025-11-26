@@ -1,22 +1,9 @@
 import React, { useState } from "react";
-import {
-  View,
-  StyleSheet,
-  Text,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import InputBar from "@/components/InputBar";
-import Button from "@/components/Button";
 import { router } from "expo-router";
 import { useSignup } from "./SignUpContext"; // Corrected import path
-import { supabase } from "@/lib/SupabaseClient";
 // 1. Import your new database functions
 import { initDatabase, saveUserDataLocally } from "@/lib/database";
 import { useAuth } from "@/lib/auth"; // 1. Import useAuth
-import GoBackButton from "@/components/GoBackButton"; // 2. Import
 import { signUpUser, userData } from "@/models/signUpModel";
 import EmContactView from "@/components/SignUpViews/EmContactView";
 
