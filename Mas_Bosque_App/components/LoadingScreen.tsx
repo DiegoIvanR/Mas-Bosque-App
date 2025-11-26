@@ -13,5 +13,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 35,
+    backgroundColor: "#00160B",
+    height: "100%",
   },
 });

@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { clearLocalData } from "@/lib/database";
 import { profileModel, UserDataType } from "@/models/profileModel";
 import ProfileView from "@/components/ProfileViews/ProfileView";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function Profile() {
   const { setIsLoggedIn } = useAuth();
@@ -44,6 +45,9 @@ export default function Profile() {
   useEffect(() => {
     fetchUser();
   }, []);
+  if (loading) {
+    return <LoadingScreen />;
+  }
   return (
     <ProfileView
       user={user}
