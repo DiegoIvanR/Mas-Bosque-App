@@ -1,16 +1,4 @@
 import React, { useState } from "react"; // Import useState
-import {
-  View,
-  StyleSheet,
-  Image,
-  Text,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import InputBar from "@/components/InputBar";
-import Button from "@/components/Button";
 import { router } from "expo-router";
 import { useSignup } from "./SignUpContext"; // Fixed typo: was SignUpContext
 import SignUpView from "@/components/SignUpViews/SignUpView";
