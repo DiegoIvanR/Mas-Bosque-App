@@ -5,7 +5,7 @@ import { supabase } from "@/lib/SupabaseClient";
 import LoginView from "@/components/LogInViews/LogInView";
 import LoadingScreen from "@/components/LoadingScreen";
 import { checkSessionSupabase, logInSupabase } from "@/models/LogInModel";
-
+import { initDatabase, saveUserDataLocally } from "@/lib/database";
 export default function LoginScreen() {
   const { setIsLoggedIn } = useAuth();
 
@@ -44,19 +44,22 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     setLoading(true);
     setError("");
-    let data: any | null = null;
     try {
-      data = await logInSupabase(email, password);
-    } catch (e: any) {
-      setError(e);
-    }
-    if (data.session) {
+      const { data, profileData, emcontact } = await logInSupabase(
+        email,
+        password
+      );
+      // Save the data returned from Supabase (it's the most reliable)
+      await initDatabase();
+      await saveUserDataLocally(profileData, emcontact);
       setIsLoggedIn(true);
       router.replace("/"); // Go to tab navigator
-    } else {
-      setError("An unexpected error occurred. Please try again.");
+      return;
+    } catch (e: any) {
+      setError(e);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSignUp = () => {

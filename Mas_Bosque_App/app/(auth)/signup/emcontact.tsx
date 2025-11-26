@@ -42,7 +42,7 @@ export default function SignupEMContact() {
       try {
         await initDatabase(); // Ensure tables exist
         // Save the data returned from Supabase (it's the most reliable)
-        await saveUserDataLocally(userData.profile, userData.contact);
+        //await saveUserDataLocally(userData.profile, userData.contact);
       } catch (dbError: any) {
         console.error("Failed to save data locally:", dbError.message);
         // Don't block the user for a local DB error, just log it.

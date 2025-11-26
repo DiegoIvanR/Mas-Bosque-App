@@ -12,6 +12,24 @@ export const logInSupabase = async (
     email: email,
     password: password,
   });
+
   if (signInError) throw signInError;
-  return data;
+  const { data: profileData, error: profileError } = await supabase
+    .from("user_profile")
+    .select(
+      "id, first_name, last_name, blood_type, allergies, medical_conditions, medications"
+    )
+    .eq("id", data.user?.id)
+    .single();
+
+  if (profileError) throw profileError;
+
+  const { data: emcontact, error: emcontactError } = await supabase
+    .from("emergency_contacts")
+    .select("user_id, name, last_name, phone, relationship")
+    .eq("user_id", data.user?.id)
+    .single();
+
+  if (emcontactError) throw emcontactError;
+  return { data, profileData, emcontact };
 };

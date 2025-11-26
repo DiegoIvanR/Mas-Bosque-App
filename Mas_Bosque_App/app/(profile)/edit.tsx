@@ -6,121 +6,20 @@ import {
   Pressable,
   ViewStyle,
   TextStyle,
-  ActivityIndicator,
 } from "react-native";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { supabase } from "@/lib/SupabaseClient"; // adjust path
-
-// --- Types ---
-type EditListItemProps = {
-  label: string;
-  value: string;
-  onPress: () => void;
-  isLast?: boolean;
-};
-
-type UserDataType = {
-  first_name: string;
-  last_name: string;
-};
-type ContactDataType = {
-  user_id: string;
-  name: string;
-  phone: string;
-  relationship: string;
-  last_name: string;
-};
-
-// --- Reusable EditListItem Component ---
-const EditListItem: React.FC<EditListItemProps> = ({
-  label,
-  value,
-  onPress,
-  isLast = false,
-}) => (
-  <Pressable style={styles.listItem} onPress={onPress}>
-    <View style={styles.listItemContent}>
-      <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value}</Text>
-      <Text style={styles.arrow}>&gt;</Text>
-    </View>
-    {!isLast && <View style={styles.separator} />}
-  </Pressable>
-);
+import { useLocalSearchParams } from "expo-router";
+import EditListItem from "@/components/ProfileViews/EditListItem";
 
 // --- Main Component ---
 export default function EditProfile() {
-  const [user, setUser] = useState<UserDataType | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [contact, setContact] = useState<ContactDataType | null>(null);
-
-  const fetchUser = async () => {
-    setLoading(true);
-    const currentUser = supabase.auth.getUser
-      ? (await supabase.auth.getUser()).data.user
-      : null;
-
-    if (!currentUser) {
-      console.log("No logged in user");
-      setLoading(false);
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("user_profile") // replace with your table name
-      .select("first_name, last_name")
-      .eq("id", currentUser.id)
-      .single();
-
-    if (error) {
-      console.log("Error fetching user:", error.message);
-    } else {
-      setUser(data);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
-
-  const fetchContact = async () => {
-    setLoading(true);
-    const currentUser = supabase.auth.getUser
-      ? (await supabase.auth.getUser()).data.user
-      : null;
-
-    if (!currentUser) {
-      console.log("No logged in user");
-      setLoading(false);
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("emergency_contacts") // replace with your table name
-      .select("user_id, name, phone, relationship, last_name")
-      .eq("user_id", currentUser.id)
-      .single();
-
-    if (error) {
-      console.log("Error fetching user:", error.message);
-    } else {
-      setContact(data as ContactDataType);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchContact();
-  }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchUser();
-      fetchContact();
-    }, [])
-  );
+  const { user: u, contact: c } = useLocalSearchParams<{
+    user: string;
+    contact: string;
+  }>();
+  const user = u ? JSON.parse(u) : null;
+  const contact = c ? JSON.parse(c) : null;
 
   const handleGoBack = () => router.back();
   // const handleEditEmail = () => console.log('Edit Email');
@@ -131,20 +30,6 @@ export default function EditProfile() {
   const handleEditContact = () =>
     router.push("/(profile)/editEmergencyContact");
 
-  if (loading)
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#00160B",
-          padding: 20,
-        }}
-      >
-        <ActivityIndicator size="large" color="#FFFFFF" />
-      </View>
-    );
   if (!user)
     return (
       <Text style={{ color: "#00160A", marginTop: 100 }}>
@@ -216,34 +101,5 @@ const styles = StyleSheet.create({
     backgroundColor: "#1B251F",
     borderRadius: 20,
     paddingHorizontal: 15,
-  } as ViewStyle,
-  listItem: {} as ViewStyle,
-  listItemContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 15,
-  } as ViewStyle,
-  label: {
-    color: "white",
-    fontSize: 14,
-    fontFamily: "Lato-Bold",
-    fontWeight: "700",
-    flex: 1,
-  } as TextStyle,
-  value: {
-    color: "#999999",
-    fontSize: 14,
-    fontFamily: "Lato-Bold",
-    fontWeight: "700",
-    textAlign: "right",
-    marginRight: 10,
-    maxWidth: "50%",
-  } as TextStyle,
-  arrow: { color: "#404040", fontSize: 12, fontWeight: "700" } as TextStyle,
-  separator: {
-    height: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    width: "100%",
   } as ViewStyle,
 });

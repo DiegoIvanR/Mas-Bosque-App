@@ -2,13 +2,17 @@ import React, { useState, useEffect } from "react";
 import { router } from "expo-router";
 import { useAuth } from "@/lib/auth";
 import { clearLocalData } from "@/lib/database";
-import { profileModel, UserDataType } from "@/models/profileModel";
+import { profileModel } from "@/models/profileModel";
 import ProfileView from "@/components/ProfileViews/ProfileView";
 import LoadingScreen from "@/components/LoadingScreen";
+import { ContactDataType, UserDataType } from "@/models/editProfileModel";
+import { editProfileModel } from "@/models/editProfileModel";
 
 export default function Profile() {
   const { setIsLoggedIn } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<UserDataType | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [contact, setContact] = useState<ContactDataType | null>(null);
 
   const handleLogout = async () => {
     setLoading(true);
@@ -25,21 +29,22 @@ export default function Profile() {
   };
 
   const handleEditProfile = () => {
-    router.push("/(profile)/edit");
+    router.push({
+      pathname: "/(profile)/edit",
+      params: { user: JSON.stringify(user), contact: JSON.stringify(contact) },
+    });
   };
-
-  const [user, setUser] = useState<UserDataType | null>(null);
 
   const fetchUser = async () => {
     setLoading(true);
     try {
-      const data = await profileModel.fetchUserSupabase();
-      setUser(data);
+      const { profile, contact } = await editProfileModel.fetchProfile();
+      setUser(profile);
+      setContact(contact);
     } catch (e: any) {
-      console.log("Error fetching user:", e.message);
-    } finally {
-      setLoading(false);
+      console.log(e.message);
     }
+    setLoading(false);
   };
 
   useEffect(() => {
