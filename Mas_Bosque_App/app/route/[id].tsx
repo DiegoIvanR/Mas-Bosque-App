@@ -20,7 +20,7 @@ import {
 } from "@/lib/database";
 import { fetchRouteSupabase } from "@/models/routesModel";
 
-import { RouteDetailView } from "@/components/RouteDetailView";
+import { RouteDetailView } from "@/components/RouteViews/RouteDetailView";
 import { Comment, getComments, addComment } from "@/models/commentsModel";
 
 export default function RouteDetailScreen() {

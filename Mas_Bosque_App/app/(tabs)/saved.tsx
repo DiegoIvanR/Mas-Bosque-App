@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { savedRoutesModel, RoutePreview } from "@/models/savedRoutesModel"; // Import Model
-import { ExploreView } from "@/components/ExploreView"; // Import View
+import { ExploreView } from "@/components/ExploreViews/ExploreView"; // Import View
 
 const PAGE_SIZE = 10;
 

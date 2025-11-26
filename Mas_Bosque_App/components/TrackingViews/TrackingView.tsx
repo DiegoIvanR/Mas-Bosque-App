@@ -3,7 +3,7 @@ import { StyleSheet, View, ActivityIndicator, Text } from "react-native";
 import { Route } from "@/lib/database";
 import { TrackingState } from "@/lib/useTrackingSession";
 import { TrackingMapView } from "./TrackingMapView";
-import { TrackingStatsOverlay } from "./TrackingStatsOverlay";
+import { TrackingStatsOverlay } from "../TrackingStatsOverlay";
 import { useSOSController } from "@/hooks/useSOSController";
 import SOSConfirmation from "@/app/(sos)/SOSConfirmation";
 type TrackingViewProps = {

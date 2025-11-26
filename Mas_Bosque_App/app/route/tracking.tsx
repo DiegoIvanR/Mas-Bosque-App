@@ -4,7 +4,7 @@ import { useLocalSearchParams, router } from "expo-router";
 import { supabase } from "@/lib/SupabaseClient";
 import { Route } from "@/lib/database";
 import { useTrackingSession } from "@/lib/useTrackingSession";
-import { TrackingView } from "@/components/TrackingView";
+import { TrackingView } from "@/components/TrackingViews/TrackingView";
 import { fetchRouteSupabase } from "@/models/routesModel";
 // --- CONTROLLER ---
 export default function TrackingScreen() {

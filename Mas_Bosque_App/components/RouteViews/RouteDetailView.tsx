@@ -11,8 +11,8 @@ import MapView from "react-native-maps";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
 import { Route } from "@/lib/database";
-import { RouteMapView } from "./RouteMapView";
-import { RouteBottomSheet } from "./RouteBottomSheet";
+import { RouteMapView } from "../RouteMapView";
+import { RouteBottomSheet } from "../RouteBottomSheet";
 import { Comment } from "@/models/commentsModel";
 
 type RouteDetailViewProps = {

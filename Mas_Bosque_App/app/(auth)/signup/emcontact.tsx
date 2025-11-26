@@ -17,6 +17,8 @@ import { supabase } from "@/lib/SupabaseClient";
 import { initDatabase, saveUserDataLocally } from "@/lib/database";
 import { useAuth } from "@/lib/auth"; // 1. Import useAuth
 import GoBackButton from "@/components/GoBackButton"; // 2. Import
+import { signUpUser, userData } from "@/models/signUpModel";
+import EmContactView from "@/components/SignUpViews/EmContactView";
 
 export default function SignupEMContact() {
   const { signupData, setSignupData } = useSignup();
@@ -38,78 +40,22 @@ export default function SignupEMContact() {
 
     setLoading(true); // Start loading
     setError(""); // Clear previous errors
+    let userData: userData | null = null;
 
-    // 4. Call Supabase auth.signUp with data from context
-    const { data: authData, error: signUpError } = await supabase.auth.signUp({
-      email: signupData.email,
-      password: signupData.password,
-    });
-
-    if (signUpError) {
-      setError(signUpError.message);
+    try {
+      userData = await signUpUser(signupData);
+    } catch (e: any) {
+      setError(e);
+    } finally {
       setLoading(false);
-      return;
     }
 
-    if (!authData.user) {
-      setError(
-        "An unexpected error occurred (no user data). Please try again."
-      );
-      setLoading(false);
-      return;
-    }
-
-    // --- Profile Insert ---
-    const { data: profileData, error: profileError } = await supabase
-      .from("user_profile")
-      .insert([
-        {
-          id: authData.user.id,
-          first_name: signupData.name,
-          last_name: signupData.lastName,
-          blood_type: signupData.bloodType,
-          allergies: signupData.allergies,
-          medical_conditions: signupData.medicalConditions,
-          medications: signupData.medications,
-        },
-      ])
-      .select();
-
-    if (profileError) {
-      setError(profileError.message);
-      setLoading(false);
-      return;
-    }
-    if (!profileData) {
-      setError(
-        "An unexpected error occurred ((profile) not saved). Please try again."
-      );
-      setLoading(false);
-      return;
-    }
-
-    // --- Emergency Contact Insert ---
-    const { data: emcontact, error: emcontactError } = await supabase
-      .from("emergency_contacts")
-      .insert([
-        {
-          user_id: authData.user.id,
-          name: signupData.contactName,
-          last_name: signupData.contactLastName,
-          phone: signupData.contactPhone,
-          relationship: signupData.contactRelationship,
-        },
-      ])
-      .select();
-
-    if (emcontactError) {
-      setError(emcontactError.message);
-    } else if (emcontact) {
+    if (userData) {
       // --- 2. SAVE TO SQLITE ON SUCCESS ---
       try {
         await initDatabase(); // Ensure tables exist
         // Save the data returned from Supabase (it's the most reliable)
-        await saveUserDataLocally(profileData[0], emcontact[0]);
+        await saveUserDataLocally(userData.profile, userData.contact);
       } catch (dbError: any) {
         console.error("Failed to save data locally:", dbError.message);
         // Don't block the user for a local DB error, just log it.
@@ -126,8 +72,6 @@ export default function SignupEMContact() {
 
     setLoading(false); // Stop loading
   };
-
-  // ... (rest of your component remains the same) ...
 
   const handleNameChange = (contactName: string) => {
     if (error) {
@@ -154,128 +98,16 @@ export default function SignupEMContact() {
     setSignupData((prev) => ({ ...prev, contactRelationship }));
   };
   return (
-    <SafeAreaView style={styles.safeArea}>
-      {/* 3. Add the button here */}
-      <View style={styles.header}>
-        <GoBackButton />
-      </View>
-      <KeyboardAvoidingView
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        <ScrollView
-          contentContainerStyle={styles.container}
-          keyboardShouldPersistTaps="handled"
-        >
-          <Text style={styles.text}>Who's your emergency contact?</Text>
-
-          <View style={styles.inputWrapper}>
-            <Text style={styles.subText}>Name</Text>
-            <InputBar
-              value={signupData.contactName}
-              onChangeText={handleNameChange}
-              autoCapitalize="words"
-            />
-          </View>
-
-          <View style={styles.inputWrapper}>
-            <Text style={styles.subText}>Last Name</Text>
-            <InputBar
-              value={signupData.contactLastName}
-              onChangeText={handleLastName}
-              autoCapitalize="words"
-            />
-          </View>
-
-          <View style={styles.inputWrapper}>
-            <Text style={styles.subText}>Phone Number</Text>
-            <InputBar
-              value={signupData.contactPhone}
-              onChangeText={handlePhone}
-              keyboardType="phone-pad"
-            />
-          </View>
-
-          <View style={styles.inputWrapper}>
-            <Text style={styles.subText}>How are they related to you?</Text>
-            <InputBar
-              value={signupData.contactRelationship}
-              onChangeText={handleRelationship}
-              autoCapitalize="words"
-            />
-          </View>
-
-          {/* --- ADDED THIS SECTION --- */}
-          <View style={styles.buttonContainer}>
-            {/* Display the error message */}
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-            <Button
-              value={loading ? "Finishing..." : "Continue"}
-              onClick={handleClick}
-              disabled={!isValid || loading} // 2. Add disabled prop
-            />
-          </View>
-          {/* --- END OF SECTION --- */}
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <EmContactView
+      signupData={signupData}
+      error={error}
+      loading={loading}
+      isValid={isValid}
+      handleNameChange={handleNameChange}
+      handleLastName={handleLastName}
+      handlePhone={handlePhone}
+      handleRelationship={handleRelationship}
+      handleClick={handleClick}
+    />
   );
 }
-
-// ... (styles remain the same) ...
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#00160B",
-  },
-  // 4. Add header style
-  header: {
-    width: "100%",
-    paddingLeft: 20,
-    paddingTop: 10,
-    zIndex: 10,
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-  container: {
-    flexGrow: 0.5, // 5. Fix: Make style identical to index.tsx
-    paddingHorizontal: 30,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 35,
-  },
-  text: {
-    fontSize: 18,
-    fontWeight: "700",
-    fontFamily: "Lato-Bold",
-    color: "#fff",
-    textAlign: "center",
-  },
-  inputWrapper: {
-    width: "100%",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    gap: 10,
-  },
-  subText: {
-    fontSize: 14,
-    fontWeight: "500",
-    fontFamily: "SF Pro Rounded",
-    color: "#fff",
-    textAlign: "left",
-  },
-  // --- ADDED THESE STYLES ---
-  buttonContainer: {
-    width: "100%", // Ensure it takes full width for alignment
-    alignItems: "center", // Center Button
-    gap: 8, // Space between error and button
-  },
-  errorText: {
-    fontSize: 14,
-    color: "#FF5A5A", // A common error color
-    fontFamily: "Lato-Bold", // Match other styles
-    textAlign: "center",
-  },
-});

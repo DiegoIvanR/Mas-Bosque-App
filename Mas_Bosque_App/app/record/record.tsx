@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Alert, ToastAndroid, Platform } from "react-native";
 import { useRecordingSession } from "@/lib/useRecordingSession";
-import { RecordingView } from "@/components/RecordingView";
+import { RecordingView } from "@/components/RecordViews/RecordingView";
 import { saveRecordedSession, uploadSessionToSupabase } from "@/lib/database";
 import { router } from "expo-router";
 import GoBackButton from "@/components/GoBackButton";
 import { View, StyleSheet } from "react-native";
-import RouteSubmissionForm from "@/components/RouteSubmissionForm";
+import RouteSubmissionForm from "@/components/RecordViews/RouteSubmissionForm";
 
 export default function RecordScreen() {
   const session = useRecordingSession();

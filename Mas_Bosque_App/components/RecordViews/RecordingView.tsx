@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { RecordingState } from "@/lib/useRecordingSession";
 import { RecordingMapView } from "./RecordingMapView";
-import { TrackingStatsOverlay } from "./TrackingStatsOverlay";
+import { TrackingStatsOverlay } from "../TrackingStatsOverlay";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
