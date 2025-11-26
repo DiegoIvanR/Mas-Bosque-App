@@ -49,8 +49,8 @@ export default function SignupEMContact() {
       }
 
       // 3. SET THE GLOBAL AUTH STATE
-      setIsLoggedIn(true);
-      router.replace("/(tabs)"); // Success!
+      setIsLoggedIn(false);
+      router.replace("/(auth)/login"); // Success!
     } else {
       setError(
         "An unexpected error occurred (contact not saved). Please try again."

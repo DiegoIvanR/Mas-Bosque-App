@@ -1,18 +1,6 @@
 import React, { useState } from "react";
-import {
-  View,
-  StyleSheet,
-  Text,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import InputBar from "@/components/InputBar";
-import Button from "@/components/Button";
 import { router } from "expo-router";
 import { useSignup } from "./SignUpContext";
-import GoBackButton from "@/components/GoBackButton"; // 1. Import
 import NameView from "@/components/SignUpViews/NameView";
 export default function SignupName() {
   const { signupData, setSignupData } = useSignup();
