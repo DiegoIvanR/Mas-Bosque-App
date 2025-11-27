@@ -151,6 +151,20 @@ export const saveUserDataLocally = async (profile: any, contact: any) => {
   );
 };
 
+export const updateContactLocally = async (contact: any) => {
+  await db.runAsync(
+    `UPDATE emergency_contacts
+     SET user_id = ?, name = ?, last_name = ?, phone = ?, relationship = ?
+     WHERE id = ?`,
+    contact.user_id,
+    contact.name,
+    contact.last_name,
+    contact.phone,
+    contact.relationship,
+    contact.id
+  );
+};
+
 export const getLocalUserData = async (userId: string) => {
   const profile = await db.getFirstAsync(
     "SELECT * FROM user_profile WHERE id = ?",

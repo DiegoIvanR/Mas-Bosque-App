@@ -12,99 +12,65 @@ import {
 import { supabase } from "@/lib/SupabaseClient";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-
+import { useLocalSearchParams } from "expo-router";
+import LoadingScreen from "@/components/LoadingScreen";
+import { editProfileModel } from "@/models/editProfileModel";
 export default function EditEmergencyContact() {
   const [loading, setLoading] = useState(true);
 
-  const [contactId, setContactId] = useState<number | null>(null);
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [relationship, setRelationship] = useState("");
+  const [id, setId] = useState("");
+  const [user_id, setUserId] = useState("");
 
-  useEffect(() => {
-    const fetchContact = async () => {
-      setLoading(true);
+  const fetchContact = async () => {
+    try {
+      const { profile, contact } = await editProfileModel.fetchProfile();
 
-      const currentUser = (await supabase.auth.getUser()).data.user;
-      if (!currentUser) {
-        console.log("No logged in user");
-        setLoading(false);
-        return;
-      }
-
-      // Fetch the user's emergency contact (assuming 1 per user)
-      const { data, error } = await supabase
-        .from("emergency_contacts")
-        .select("*")
-        .eq("user_id", currentUser.id)
-        .maybeSingle(); // gracefully handles empty
-
-      if (error) {
-        console.log("Error fetching emergency contact:", error.message);
-      }
-
-      if (data) {
-        setContactId(data.id);
-        setName(data.name || "");
-        setLastName(data.last_name || "");
-        setPhone(data.phone || "");
-        setRelationship(data.relationship || "");
-      }
-
+      setName(contact.name || "");
+      setLastName(contact.last_name || "");
+      setPhone(contact.phone || "");
+      setRelationship(contact.relationship || "");
       setLoading(false);
-    };
-
+      setId(contact.id || "");
+      setUserId(contact.user_id || "");
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
     fetchContact();
   }, []);
 
   const handleSave = async () => {
-    const currentUser = (await supabase.auth.getUser()).data.user;
-    if (!currentUser) return;
+    setLoading(true);
+    if (id == "") {
+      console.error("Contact ID is missing.");
+      return;
+    }
 
-    // If contact exists → update it
-    if (contactId) {
-      const { error } = await supabase
-        .from("emergency_contacts")
-        .update({
-          name,
-          last_name: lastName,
-          phone,
-          relationship,
-        })
-        .eq("id", contactId);
+    // Prepare the updated contact object with form data
+    const updatedContact = {
+      id: id,
+      user_id: user_id,
+      name,
+      last_name: lastName,
+      phone,
+      relationship,
+    };
 
-      if (error) console.log("Error updating:", error.message);
-      else router.back();
-    } else {
-      // If contact does NOT exist → create it
-      const { error } = await supabase.from("emergency_contacts").insert({
-        user_id: currentUser.id,
-        name,
-        last_name: lastName,
-        phone,
-        relationship,
-      });
-
-      if (error) console.log("Error inserting:", error.message);
-      else router.back();
+    try {
+      await editProfileModel.handleSave(updatedContact);
+    } catch (error: any) {
+      console.error("Error updating contact:", error.message);
+    } finally {
+      setLoading(false);
+      router.back();
     }
   };
-
-  if (loading)
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#00160B",
-          padding: 20,
-        }}
-      >
-        <ActivityIndicator size="large" color="#FFFFFF" />
-      </View>
-    );
+  if (loading) return <LoadingScreen />;
 
   return (
     <View style={styles.container}>

@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/SupabaseClient";
-import { getLocalUserData } from "@/lib/database";
-
+import { getLocalUserData, updateContactLocally } from "@/lib/database";
+import { router } from "expo-router";
 export type UserDataType = {
   id: string;
   first_name: string;
@@ -11,6 +11,7 @@ export type UserDataType = {
   medications: string;
 };
 export type ContactDataType = {
+  id: string;
   user_id: string;
   name: string;
   phone: string;
@@ -32,5 +33,26 @@ export const editProfileModel = {
       contact: ContactDataType;
     };
     return { profile, contact };
+  },
+
+  async handleSave(contact: ContactDataType): Promise<void> {
+    const currentUser = supabase.auth.getUser
+      ? (await supabase.auth.getUser()).data.user
+      : null;
+    if (!currentUser) throw Error("No logged in user");
+
+    const { error } = await supabase
+      .from("emergency_contacts")
+      .update({
+        name: contact.name,
+        last_name: contact.last_name,
+        phone: contact.phone,
+        relationship: contact.relationship,
+      })
+      .eq("id", contact.id);
+
+    if (error) throw error;
+    updateContactLocally(contact);
+    console.log("success?");
   },
 };

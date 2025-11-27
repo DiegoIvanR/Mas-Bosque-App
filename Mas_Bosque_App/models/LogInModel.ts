@@ -26,7 +26,7 @@ export const logInSupabase = async (
 
   const { data: emcontact, error: emcontactError } = await supabase
     .from("emergency_contacts")
-    .select("user_id, name, last_name, phone, relationship")
+    .select("id, user_id, name, last_name, phone, relationship")
     .eq("user_id", data.user?.id)
     .single();
 
