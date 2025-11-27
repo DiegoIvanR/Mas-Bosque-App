@@ -1,21 +1,9 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  StyleSheet,
-  ViewStyle,
-  TextStyle,
-  ActivityIndicator,
-} from "react-native";
-import { supabase } from "@/lib/SupabaseClient";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
 import LoadingScreen from "@/components/LoadingScreen";
 import { editProfileModel } from "@/models/editProfileModel";
 import EditEmergencyContactView from "@/components/ProfileViews/EditEmergencyContactView";
+import ErrorScreen from "@/components/ErrorScreen";
 export default function EditEmergencyContact() {
   const [loading, setLoading] = useState(true);
 
@@ -25,9 +13,11 @@ export default function EditEmergencyContact() {
   const [relationship, setRelationship] = useState("");
   const [id, setId] = useState("");
   const [user_id, setUserId] = useState("");
+  const [error, setError] = useState("");
 
   const fetchContact = async () => {
     try {
+      setError("");
       const { profile, contact } = await editProfileModel.fetchProfile();
 
       setName(contact.name || "");
@@ -39,6 +29,7 @@ export default function EditEmergencyContact() {
       setUserId(contact.user_id || "");
     } catch (error: any) {
       console.log(error);
+      setError(error.message);
     }
   };
   useEffect(() => {
@@ -49,6 +40,7 @@ export default function EditEmergencyContact() {
     setLoading(true);
     if (id == "") {
       console.error("Contact ID is missing.");
+      setError("Contact ID is missing.");
       return;
     }
 
@@ -63,15 +55,18 @@ export default function EditEmergencyContact() {
     };
 
     try {
-      await editProfileModel.handleSave(updatedContact);
+      setError("");
+      await editProfileModel.handleUpdateContact(updatedContact);
     } catch (error: any) {
       console.error("Error updating contact:", error.message);
+      setError(error.message);
     } finally {
       setLoading(false);
       router.back();
     }
   };
   if (loading) return <LoadingScreen />;
+  else if (error != "") return <ErrorScreen error={error} />;
 
   const handleBack = () => {
     router.back();

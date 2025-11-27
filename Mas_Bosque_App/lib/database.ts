@@ -165,6 +165,29 @@ export const updateContactLocally = async (contact: any) => {
   );
 };
 
+export const updateMedicalLocally = async (profile: any) => {
+  await db.runAsync(
+    `UPDATE user_profile
+     SET blood_type = ?, allergies = ?, medical_conditions = ?, medications = ?
+     WHERE id = ?`,
+    profile.blood_type,
+    profile.allergies,
+    profile.medical_conditions,
+    profile.medications,
+    profile.id
+  );
+};
+export const updateNameLocally = async (profile: any) => {
+  await db.runAsync(
+    `UPDATE user_profile
+     SET first_name = ?, last_name = ?
+     WHERE id = ?`,
+    profile.first_name,
+    profile.last_name,
+    profile.id
+  );
+};
+
 export const getLocalUserData = async (userId: string) => {
   const profile = await db.getFirstAsync(
     "SELECT * FROM user_profile WHERE id = ?",

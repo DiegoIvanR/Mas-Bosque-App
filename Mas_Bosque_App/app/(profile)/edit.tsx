@@ -24,10 +24,7 @@ export default function EditProfile() {
     router.push("/(profile)/editMedicalConditions");
 
   const handleEditContact = () => {
-    router.push({
-      pathname: "/(profile)/editEmergencyContact",
-      params: { contact: JSON.stringify(contact) },
-    });
+    router.push("/(profile)/editEmergencyContact");
     return;
   };
 
@@ -54,7 +51,7 @@ export default function EditProfile() {
   );
 
   if (loading) return <LoadingScreen />;
-  else if (!profile) return <ErrorScreen error={error} />;
+  else if (error != "") return <ErrorScreen error={error} />;
   return (
     <EditView
       user={profile}

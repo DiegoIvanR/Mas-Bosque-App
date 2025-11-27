@@ -8,6 +8,8 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { ContactDataType, UserDataType } from "@/models/editProfileModel";
 import { editProfileModel } from "@/models/editProfileModel";
 import ErrorScreen from "@/components/ErrorScreen";
+import { useFocusEffect } from "expo-router";
+import { useCallback } from "react";
 export default function Profile() {
   const { setIsLoggedIn } = useAuth();
   const [user, setUser] = useState<UserDataType | null>(null);
@@ -50,11 +52,13 @@ export default function Profile() {
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchUser();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUser();
+    }, [])
+  );
   if (loading) return <LoadingScreen />;
-  else if (error) return <ErrorScreen error={error} />;
+  else if (error != "") return <ErrorScreen error={error} />;
   return (
     <ProfileView
       user={user}
