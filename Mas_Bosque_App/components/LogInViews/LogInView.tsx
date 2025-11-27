@@ -11,7 +11,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import InputBar from "@/components/InputBar";
 import Button from "@/components/Button";
-import { SignupData } from "@/app/(auth)/signup/SignUpContext";
 
 type LogInProps = {
   error: string;
