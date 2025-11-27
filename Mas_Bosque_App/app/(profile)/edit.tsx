@@ -7,10 +7,14 @@ import {
   editProfileModel,
   UserDataType,
 } from "@/models/editProfileModel";
+import LoadingScreen from "@/components/LoadingScreen";
 // --- Main Component ---
 export default function EditProfile() {
   const [profile, setProfile] = useState<UserDataType | null>(null);
   const [contact, setContact] = useState<ContactDataType | null>(null);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const handleGoBack = () => router.back();
   // const handleEditEmail = () => console.log('Edit Email');
@@ -29,12 +33,18 @@ export default function EditProfile() {
 
   const fetchContact = async () => {
     try {
+      setError("");
+      setLoading(true);
       const { profile, contact } = await editProfileModel.fetchProfile();
 
       setProfile(profile);
       setContact(contact);
+      if (!profile) setError("No user data found");
     } catch (error: any) {
       console.log(error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
   useFocusEffect(
@@ -43,7 +53,8 @@ export default function EditProfile() {
     }, [])
   );
 
-  if (!profile) return <ErrorScreen error="No user data found" />;
+  if (loading) return <LoadingScreen />;
+  else if (!profile) return <ErrorScreen error={error} />;
   return (
     <EditView
       user={profile}

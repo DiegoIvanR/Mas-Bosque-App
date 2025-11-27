@@ -7,12 +7,13 @@ import ProfileView from "@/components/ProfileViews/ProfileView";
 import LoadingScreen from "@/components/LoadingScreen";
 import { ContactDataType, UserDataType } from "@/models/editProfileModel";
 import { editProfileModel } from "@/models/editProfileModel";
-
+import ErrorScreen from "@/components/ErrorScreen";
 export default function Profile() {
   const { setIsLoggedIn } = useAuth();
   const [user, setUser] = useState<UserDataType | null>(null);
   const [loading, setLoading] = useState(true);
   const [contact, setContact] = useState<ContactDataType | null>(null);
+  const [error, setError] = useState("");
 
   const handleLogout = async () => {
     setLoading(true);
@@ -38,11 +39,13 @@ export default function Profile() {
   const fetchUser = async () => {
     setLoading(true);
     try {
+      setError("");
       const { profile, contact } = await editProfileModel.fetchProfile();
       setUser(profile);
       setContact(contact);
     } catch (e: any) {
       console.log(e.message);
+      setError(e.message);
     }
     setLoading(false);
   };
@@ -50,9 +53,8 @@ export default function Profile() {
   useEffect(() => {
     fetchUser();
   }, []);
-  if (loading) {
-    return <LoadingScreen />;
-  }
+  if (loading) return <LoadingScreen />;
+  else if (error) return <ErrorScreen error={error} />;
   return (
     <ProfileView
       user={user}
