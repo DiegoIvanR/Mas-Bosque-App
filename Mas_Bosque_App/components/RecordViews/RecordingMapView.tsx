@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React from "react";
 import { StyleSheet, View } from "react-native";
 import MapView, { Polyline, Marker } from "react-native-maps";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -10,6 +10,13 @@ type RecordingMapViewProps = {
   interestPoints: InterestPoint[];
   currentLocation: Location.LocationObject | null;
   heading: Location.HeadingData | null;
+  mapRef: MapView;
+  getMarkerIcon: (
+    type: string
+  ) => "camera" | "alert-circle" | "map-marker" | "arrow-down-bold-circle";
+  getMarkerColor: (
+    type: string
+  ) => "#04FF0C" | "#FF5A5A" | "#FFA500" | "#FFFFFF";
 };
 
 export function RecordingMapView({
@@ -17,46 +24,10 @@ export function RecordingMapView({
   interestPoints,
   currentLocation,
   heading,
+  mapRef,
+  getMarkerIcon,
+  getMarkerColor,
 }: RecordingMapViewProps) {
-  const mapRef = useRef<MapView>(null);
-
-  useEffect(() => {
-    if (currentLocation && mapRef.current) {
-      mapRef.current.animateCamera({
-        center: currentLocation.coords,
-        heading: heading?.trueHeading || 0,
-        pitch: 0,
-        zoom: 17,
-      });
-    }
-  }, [currentLocation]);
-
-  const getMarkerIcon = (type: string) => {
-    switch (type) {
-      case "hazard":
-        return "alert-circle";
-      case "drop":
-        return "arrow-down-bold-circle";
-      case "viewpoint":
-        return "camera";
-      default:
-        return "map-marker";
-    }
-  };
-
-  const getMarkerColor = (type: string) => {
-    switch (type) {
-      case "hazard":
-        return "#FF5A5A";
-      case "drop":
-        return "#FFA500";
-      case "viewpoint":
-        return "#04FF0C";
-      default:
-        return "#FFFFFF";
-    }
-  };
-
   return (
     <MapView
       ref={mapRef}

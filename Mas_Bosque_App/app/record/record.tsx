@@ -7,6 +7,7 @@ import { router } from "expo-router";
 import GoBackButton from "@/components/GoBackButton";
 import { View, StyleSheet } from "react-native";
 import RouteSubmissionForm from "@/components/RecordViews/RouteSubmissionForm";
+import LoadingScreen from "@/components/LoadingScreen";
 
 export default function RecordScreen() {
   const session = useRecordingSession();
@@ -103,7 +104,7 @@ export default function RecordScreen() {
       ToastAndroid.show(`${type.toUpperCase()} added!`, ToastAndroid.SHORT);
     }
   };
-
+  if (isProcessing) return <LoadingScreen />;
   return (
     <View style={styles.container}>
       <GoBackButton
@@ -122,8 +123,6 @@ export default function RecordScreen() {
         onStart={handleStart}
         onStop={handleStop}
         onAddPoint={handleAddPoint}
-        isProcessing={isProcessing}
-        loadingMessage={loadingMessage}
       />
 
       {/* The Form View Layer */}

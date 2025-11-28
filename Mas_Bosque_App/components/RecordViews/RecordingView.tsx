@@ -1,13 +1,7 @@
 import React from "react";
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { RecordingState } from "@/lib/useRecordingSession";
-import { RecordingMapView } from "./RecordingMapView";
+import { RecordingMap } from "./RecordingMap";
 import { TrackingStatsOverlay } from "../TrackingStatsOverlay";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,8 +11,6 @@ type RecordingViewProps = {
   onStart: () => void;
   onStop: () => void;
   onAddPoint: (type: "hazard" | "drop" | "viewpoint") => void;
-  isProcessing: boolean;
-  loadingMessage?: string;
 };
 
 export function RecordingView({
@@ -26,25 +18,13 @@ export function RecordingView({
   onStart,
   onStop,
   onAddPoint,
-  isProcessing,
-  loadingMessage,
 }: RecordingViewProps) {
   // Loading Overlay (during save/upload)
-  if (isProcessing) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#04FF0C" />
-        <Text style={styles.loadingText}>
-          {loadingMessage || "Processing..."}
-        </Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
       {/* 1. Map Layer */}
-      <RecordingMapView
+      <RecordingMap
         routePath={state.routePath}
         interestPoints={state.interestPoints}
         currentLocation={state.currentLocation}
