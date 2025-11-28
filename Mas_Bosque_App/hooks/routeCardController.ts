@@ -12,6 +12,10 @@ export function useRouteCardController(route: RoutePreview) {
   }, [route.saved]);
 
   const onPressCard = () => {
+    if (!route.id) {
+      console.error("Route ID is missing.");
+      return;
+    }
     router.push(`/route/${route.id}`);
   };
 

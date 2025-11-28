@@ -1,24 +1,15 @@
 import React from "react";
-import {
-  StyleSheet,
-  View,
-  Text,
-  ActivityIndicator,
-  Pressable,
-} from "react-native";
+import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import MapView from "react-native-maps";
 import BottomSheet from "@gorhom/bottom-sheet";
-import { router } from "expo-router";
 import { Route } from "@/lib/database";
-import { RouteMapView } from "../RouteMapView";
+import RouteMap from "../RouteMap";
 import { RouteBottomSheet } from "../RouteBottomSheet";
 import { Comment } from "@/models/commentsModel";
 
 type RouteDetailViewProps = {
-  loading: boolean;
-  error: string | null;
-  route: Route | null;
+  route: Route;
   hasLocationPermission: boolean;
   isDownloaded: boolean;
   mapRef: React.RefObject<MapView>;
@@ -45,8 +36,6 @@ type RouteDetailViewProps = {
 };
 
 export function RouteDetailView({
-  loading,
-  error,
   route,
   hasLocationPermission,
   isDownloaded,
@@ -70,31 +59,9 @@ export function RouteDetailView({
   setInputText,
   isKeyboardVisible,
 }: RouteDetailViewProps) {
-  // 1. Handle Loading State
-  if (loading) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FFFFFF" />
-      </View>
-    );
-  }
-
-  // 2. Handle Error or Missing Route State
-  if (error || !route) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>{error || "Route not found."}</Text>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.buttonText}>Go Back</Text>
-        </Pressable>
-      </View>
-    );
-  }
-
-  // 3. Handle Success State
   return (
     <GestureHandlerRootView style={styles.container}>
-      <RouteMapView
+      <RouteMap
         route={route}
         hasLocationPermission={hasLocationPermission}
         mapRef={mapRef}

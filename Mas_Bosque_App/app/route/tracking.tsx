@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Text } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
-import { supabase } from "@/lib/SupabaseClient";
 import { Route } from "@/lib/database";
 import { useTrackingSession } from "@/lib/useTrackingSession";
 import { TrackingView } from "@/components/TrackingViews/TrackingView";
 import { fetchRouteSupabase } from "@/models/routesModel";
+import LoadingScreen, { LoadingLocation } from "@/components/LoadingScreen";
+import ErrorScreen from "@/components/ErrorScreen";
 // --- CONTROLLER ---
 export default function TrackingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -56,24 +56,33 @@ export default function TrackingScreen() {
   const handleExitSession = useCallback(() => {
     sessionState.stopSession(); // Stop listeners
     router.back(); // Go back to the route detail screen
-  }, [sessionState.stopSession]);
+  }, [sessionState]);
 
   const handleSOS = useCallback(() => {
     // Placeholder as requested
     console.log("SOS Button Pressed!");
     // TODO: Implement SOS logic
   }, []);
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  // Handle error loading polyline
+  if (error || !routePolyline) {
+    return <ErrorScreen error={error} />;
+  }
+  // Handle waiting for first location fix
+  if (!sessionState.location || !sessionState.heading) {
+    return <LoadingLocation />;
+  }
 
   // --- RENDER (View) ---
   return (
     <TrackingView
-      loading={loading}
-      error={error}
       routePolyline={routePolyline}
       interestPoints={interestPoints}
       sessionState={sessionState}
       onExit={handleExitSession}
-      onSOS={handleSOS}
     />
   );
 }

@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 type ErrorScreenProps = {
-  error: string;
+  error: string | null;
 };
 export default function ErrorScreen({ error }: ErrorScreenProps) {
   return (
