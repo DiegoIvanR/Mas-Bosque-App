@@ -3,7 +3,7 @@ import MapView from "react-native-maps";
 
 import { Route } from "@/lib/database";
 import { routeMapHelperFunctions } from "@/hooks/routeMapHelperFunctions";
-import { RouteMapView } from "../views/RouteMapView";
+import { RouteMapView } from "@/views/RouteViews/RouteMapView";
 
 type RouteMapProps = {
   route: Route;

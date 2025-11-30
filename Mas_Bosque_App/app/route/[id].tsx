@@ -1,9 +1,9 @@
 import { useLocalSearchParams } from "expo-router";
 import LoadingScreen from "@/views/LoadingScreen";
 import ErrorScreen from "@/views/ErrorScreen";
-import { RouteDetailView } from "@/views/RouteDetailView";
+import { RouteDetailView } from "@/views/RouteViews/RouteDetailView";
 import { useRoutesController } from "@/hooks/routesController";
-import { useEffect } from "react";
+
 export default function RouteDetailScreen() {
   // 1. Destructure params
   const params = useLocalSearchParams();

@@ -4,7 +4,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import MapView from "react-native-maps";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { Route } from "@/lib/database";
-import RouteMap from "../components/RouteMap";
+import RouteMap from "@/components/RouteMap";
 import { RouteBottomSheet } from "./RouteBottomSheet";
 import { Comment } from "@/models/commentsModel";
 

@@ -1,11 +1,10 @@
 import * as SQLite from "expo-sqlite";
 import { supabase } from "./SupabaseClient";
+// --- FIX: Point to legacy to restore readAsStringAsync ---
 import * as FileSystem from "expo-file-system/legacy";
-import { decode } from "base64-arraybuffer"; // You might need: npm install base64-arraybuffer
+import { decode } from "base64-arraybuffer";
 
 // --- TYPES ---
-
-// 1. Shared Interest Point Interface
 
 export interface RecordedSession {
   id?: number;
@@ -15,13 +14,13 @@ export interface RecordedSession {
   duration_seconds: number;
   route_data: { latitude: number; longitude: number }[];
   interest_points: InterestPoint[];
-  // NEW FIELDS
   name?: string;
   difficulty?: "Easy" | "Medium" | "Hard";
   local_image_uri?: string;
 }
+
 export interface InterestPoint {
-  id: string | number; // String for Supabase UUID, Number for Local Auto-increment
+  id: string | number;
   latitude: number;
   longitude: number;
   type: "hazard" | "drop" | "viewpoint" | "general";
@@ -29,7 +28,6 @@ export interface InterestPoint {
   created_at: string;
 }
 
-// 2. Updated Route Interface
 export interface Route {
   id: string;
   name: string;
@@ -40,10 +38,9 @@ export interface Route {
   distance_km: number;
   time_minutes: number;
   route_data: { latitude: number; longitude: number }[];
-  interest_points: InterestPoint[]; // <--- Added this field
+  interest_points: InterestPoint[];
 }
 
-// 3. Helper for SQLite storage
 interface SavedRouteInDB {
   id: string;
   name: string;
@@ -53,8 +50,8 @@ interface SavedRouteInDB {
   difficulty: string;
   distance_km: number;
   time_minutes: number;
-  route_data: string; // JSON string
-  interest_points: string; // JSON string <--- Added this field
+  route_data: string;
+  interest_points: string;
 }
 
 // --- DATABASE SETUP ---
@@ -85,7 +82,6 @@ export const initDatabase = async () => {
       FOREIGN KEY (user_id) REFERENCES user_profile (id)
     );
 
-    -- UPDATED: Added interest_points column
     CREATE TABLE IF NOT EXISTS saved_routes (
       id TEXT PRIMARY KEY NOT NULL,
       name TEXT NOT NULL,
@@ -96,7 +92,7 @@ export const initDatabase = async () => {
       distance_km REAL,
       time_minutes INTEGER,
       route_data TEXT NOT NULL,
-      interest_points TEXT DEFAULT '[]' -- Store markers as JSON
+      interest_points TEXT DEFAULT '[]'
     );
 
     CREATE TABLE IF NOT EXISTS recorded_sessions (
@@ -130,24 +126,28 @@ export const saveUserDataLocally = async (profile: any, contact: any) => {
   await db.runAsync(
     `INSERT OR REPLACE INTO user_profile (id, first_name, last_name, blood_type, allergies, medical_conditions, medications) 
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    profile.id,
-    profile.first_name,
-    profile.last_name,
-    profile.blood_type,
-    profile.allergies,
-    profile.medical_conditions,
-    profile.medications
+    [
+      profile.id,
+      profile.first_name,
+      profile.last_name,
+      profile.blood_type,
+      profile.allergies,
+      profile.medical_conditions,
+      profile.medications,
+    ]
   );
 
   await db.runAsync(
     `INSERT OR REPLACE INTO emergency_contacts (id, user_id, name, last_name, phone, relationship)
      VALUES (?, ?, ?, ?, ?, ?)`,
-    contact.id,
-    contact.user_id,
-    contact.name,
-    contact.last_name,
-    contact.phone,
-    contact.relationship
+    [
+      contact.id,
+      contact.user_id,
+      contact.name,
+      contact.last_name,
+      contact.phone,
+      contact.relationship,
+    ]
   );
 };
 
@@ -156,12 +156,14 @@ export const updateContactLocally = async (contact: any) => {
     `UPDATE emergency_contacts
      SET user_id = ?, name = ?, last_name = ?, phone = ?, relationship = ?
      WHERE id = ?`,
-    contact.user_id,
-    contact.name,
-    contact.last_name,
-    contact.phone,
-    contact.relationship,
-    contact.id
+    [
+      contact.user_id,
+      contact.name,
+      contact.last_name,
+      contact.phone,
+      contact.relationship,
+      contact.id,
+    ]
   );
 };
 
@@ -170,40 +172,40 @@ export const updateMedicalLocally = async (profile: any) => {
     `UPDATE user_profile
      SET blood_type = ?, allergies = ?, medical_conditions = ?, medications = ?
      WHERE id = ?`,
-    profile.blood_type,
-    profile.allergies,
-    profile.medical_conditions,
-    profile.medications,
-    profile.id
+    [
+      profile.blood_type,
+      profile.allergies,
+      profile.medical_conditions,
+      profile.medications,
+      profile.id,
+    ]
   );
 };
+
 export const updateNameLocally = async (profile: any) => {
   await db.runAsync(
     `UPDATE user_profile
      SET first_name = ?, last_name = ?
      WHERE id = ?`,
-    profile.first_name,
-    profile.last_name,
-    profile.id
+    [profile.first_name, profile.last_name, profile.id]
   );
 };
 
 export const getLocalUserData = async (userId: string) => {
   const profile = await db.getFirstAsync(
     "SELECT * FROM user_profile WHERE id = ?",
-    userId
+    [userId]
   );
   const contact = await db.getFirstAsync(
     "SELECT * FROM emergency_contacts WHERE user_id = ?",
-    userId
+    [userId]
   );
   return { profile, contact };
 };
 
-// --- SAVED ROUTE FUNCTIONS (UPDATED) ---
+// --- SAVED ROUTE FUNCTIONS ---
 
 export const saveRouteLocally = async (route: Route): Promise<void> => {
-  // We stringify BOTH the path and the points for offline storage
   await db.runAsync(
     `INSERT OR REPLACE INTO saved_routes 
       (id, name, location, image_url, rating, difficulty, distance_km, time_minutes, route_data, interest_points) 
@@ -218,7 +220,7 @@ export const saveRouteLocally = async (route: Route): Promise<void> => {
       route.distance_km,
       route.time_minutes,
       JSON.stringify(route.route_data),
-      JSON.stringify(route.interest_points || []), // Handle missing points safely
+      JSON.stringify(route.interest_points || []),
     ]
   );
 };
@@ -238,7 +240,7 @@ export const getLocalSavedRoutes = async (): Promise<Route[]> => {
 export const getLocalRouteById = async (id: string): Promise<Route | null> => {
   const row = await db.getFirstAsync<SavedRouteInDB>(
     "SELECT * FROM saved_routes WHERE id = ?;",
-    id
+    [id]
   );
 
   if (row) {
@@ -258,7 +260,7 @@ export const checkIfRouteIsSaved = async (id: string): Promise<boolean> => {
   try {
     const result = await db.getFirstAsync<{ id: string }>(
       "SELECT id FROM saved_routes WHERE id = ?;",
-      id
+      [id]
     );
     return result != null;
   } catch (error) {
@@ -269,7 +271,7 @@ export const checkIfRouteIsSaved = async (id: string): Promise<boolean> => {
 
 export const deleteLocalRouteById = async (id: string): Promise<void> => {
   try {
-    await db.runAsync("DELETE FROM saved_routes WHERE id = ?;", id);
+    await db.runAsync("DELETE FROM saved_routes WHERE id = ?;", [id]);
   } catch (error) {
     console.error("Error deleting local route:", error);
     throw error;
@@ -291,9 +293,9 @@ export const saveRecordedSession = async (session: RecordedSession) => {
         session.distance_km,
         session.duration_seconds,
         JSON.stringify(session.route_data),
-        session.name || "Untitled Route", // NEW
-        session.difficulty || "Medium", // NEW
-        session.local_image_uri || null, // NEW
+        session.name || "Untitled Route",
+        session.difficulty || "Medium",
+        session.local_image_uri || null,
       ]
     );
 
@@ -326,33 +328,39 @@ export const saveRecordedSession = async (session: RecordedSession) => {
 
 export const uploadSessionToSupabase = async (localSessionId: number) => {
   try {
+    // 1. Get the authenticated user ID first
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error("User not authenticated");
+
     const session = await db.getFirstAsync<any>(
       "SELECT * FROM recorded_sessions WHERE id = ?",
-      localSessionId
+      [localSessionId]
     );
     const points = await db.getAllAsync<any>(
       "SELECT * FROM interest_points WHERE session_id = ?",
-      localSessionId
+      [localSessionId]
     );
 
     if (!session) throw new Error("Local session not found");
 
     let publicImageUrl = "";
 
-    // --- FIX STARTS HERE ---
+    // 2. Handle Image Upload
     if (session.local_image_uri) {
       const fileName = `${session.start_time}_${localSessionId}.jpg`;
 
-      // 1. Read as Base64 String (using string literal to avoid 'undefined' error)
+      // Use the LEGACY readAsStringAsync
       const base64 = await FileSystem.readAsStringAsync(
         session.local_image_uri,
         {
-          encoding: "base64", // <--- Use string 'base64', not the Enum
+          encoding: "base64",
         }
       );
 
-      // 2. Upload using ArrayBuffer (decode)
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("route_images")
         .upload(fileName, decode(base64), {
           contentType: "image/jpeg",
@@ -361,7 +369,6 @@ export const uploadSessionToSupabase = async (localSessionId: number) => {
 
       if (uploadError) throw uploadError;
 
-      // 3. Get Public URL
       const { data: urlData } = supabase.storage
         .from("route_images")
         .getPublicUrl(fileName);
@@ -369,19 +376,20 @@ export const uploadSessionToSupabase = async (localSessionId: number) => {
       publicImageUrl = urlData.publicUrl;
     }
 
-    // 2. Prepare Route Payload with Form Data
+    // 3. Prepare Route Payload with USER_ID
     const routePayload = {
-      name: session.name, // From DB
-      location: "Guadalajara, MX", // You can reverse geocode this if needed
-      image_url: publicImageUrl, // From Storage
+      user_id: user.id, // <--- Ensures RLS compliance
+      name: session.name,
+      location: "Guadalajara, MX",
+      image_url: publicImageUrl,
       rating: 0,
-      difficulty: session.difficulty, // From DB
+      difficulty: session.difficulty,
       distance_km: session.distance_km,
       time_minutes: Math.floor(session.duration_seconds / 60),
       route_data: JSON.parse(session.route_data),
     };
 
-    // 3. Insert into Routes
+    // 4. Insert into Routes
     const { data: newRoute, error: routeError } = await supabase
       .from("routes")
       .insert([routePayload])
@@ -391,7 +399,7 @@ export const uploadSessionToSupabase = async (localSessionId: number) => {
     if (routeError) throw routeError;
     const realSupabaseId = newRoute.id;
 
-    // 4. Upload Points using the NEW UUID
+    // 5. Upload Points using the NEW UUID
     if (points.length > 0) {
       const pointsPayload = points.map((p) => ({
         route_id: realSupabaseId,
@@ -409,10 +417,10 @@ export const uploadSessionToSupabase = async (localSessionId: number) => {
       if (pointsError) throw pointsError;
     }
 
-    // 5. Mark Local Session as Synced
+    // 6. Mark Local Session as Synced
     await db.runAsync(
       "UPDATE recorded_sessions SET synced_to_supabase = 1 WHERE id = ?",
-      localSessionId
+      [localSessionId]
     );
 
     return true;
@@ -429,9 +437,6 @@ export const getUnsyncedSessions = async () => {
   return sessions;
 };
 
-// --- LOGOUT FUNCTION (Restored & Updated) ---
-
-// This function clears all data from ALL tables for logout
 export const clearLocalData = async () => {
   try {
     await db.runAsync("DROP TABLE IF EXISTS interest_points");

@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { Alert, ToastAndroid, Platform } from "react-native";
+import { Alert, ToastAndroid, Platform, View, StyleSheet } from "react-native";
+import { router } from "expo-router";
+
 import { useRecordingSession } from "@/lib/useRecordingSession";
 import { RecordingView } from "@/components/Record/RecordingView";
-import { saveRecordedSession, uploadSessionToSupabase } from "@/lib/database";
-import { router } from "expo-router";
+import { saveRecordedSession, uploadSessionToSupabase } from "@/lib/database"; // Import from the file above
 import GoBackButton from "@/components/Helpers/GoBackButton";
-import { View, StyleSheet } from "react-native";
 import RouteSubmissionForm from "@/components/Record/RouteSubmissionForm";
 import LoadingScreen from "@/views/LoadingScreen";
 
@@ -21,20 +21,14 @@ export default function RecordScreen() {
   };
 
   const handleStop = async () => {
-    // Instead of Alert directly, we just open the form
-    // You might want a small confirmation here, or just stop:
     session.stopRecording();
     setShowForm(true);
   };
 
   const handleCancelForm = () => {
-    // Resume recording? Or just close modal?
-    // If you want to discard:
     setShowForm(false);
-    // Note: session is stopped. You might want to reset it or handle 'resume' logic.
   };
 
-  // Called when user hits "Save" on the modal
   const handleFormSubmit = async (formData: {
     name: string;
     difficulty: any;
@@ -52,14 +46,14 @@ export default function RecordScreen() {
       setLoadingMessage("Saving locally...");
 
       const recordedSession = {
-        // SQLite auto-increments ID
+        // SQLite auto-increments ID, we don't pass it here
         start_time: session.startTime || new Date().toISOString(),
         end_time: new Date().toISOString(),
         distance_km: session.distanceTraveled,
         duration_seconds: session.elapsedTime,
         route_data: session.routePath,
         interest_points: session.interestPoints,
-        // NEW FORM DATA
+        // FORM DATA
         name: formData.name,
         difficulty: formData.difficulty,
         local_image_uri: formData.imageUri || undefined,
@@ -70,7 +64,7 @@ export default function RecordScreen() {
 
       setLoadingMessage("Saved! Uploading...");
 
-      // 2. Upload to Supabase (includes Image upload now)
+      // 2. Upload to Supabase
       await performUpload(localSessionId);
     } catch (e: any) {
       console.error(e);
@@ -92,7 +86,7 @@ export default function RecordScreen() {
         "Upload Failed",
         "Data saved locally. We will try uploading later."
       );
-      router.replace("/(tabs)/saved");
+      router.replace("/(tabs)");
     } finally {
       setIsProcessing(false);
     }
@@ -104,7 +98,9 @@ export default function RecordScreen() {
       ToastAndroid.show(`${type.toUpperCase()} added!`, ToastAndroid.SHORT);
     }
   };
+
   if (isProcessing) return <LoadingScreen />;
+
   return (
     <View style={styles.container}>
       <GoBackButton
@@ -113,7 +109,7 @@ export default function RecordScreen() {
           top: 20,
           left: 20,
           zIndex: 100,
-          transform: [{ rotate: "270deg" }],
+          transform: [{ rotate: "270deg" }], // Fixed invalid syntax here
         }}
         backgroundColor={"rgba(30, 30, 30, 0.85)"}
       />
@@ -125,7 +121,6 @@ export default function RecordScreen() {
         onAddPoint={handleAddPoint}
       />
 
-      {/* The Form View Layer */}
       <RouteSubmissionForm
         visible={showForm}
         onCancel={handleCancelForm}
@@ -134,16 +129,11 @@ export default function RecordScreen() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#00160B",
   },
-  goBackButton: {
-    position: "absolute",
-    top: 20, // Adjust for safe area
-    left: 20, // Adjust for padding
-    zIndex: 100,
-    transform: "90",
-  },
+  // Removed unused goBackButton style to avoid confusion
 });
