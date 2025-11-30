@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useMemo,
-  useCallback,
-} from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import MapView from "react-native-maps";
 import { router } from "expo-router";
 import BottomSheet from "@gorhom/bottom-sheet";

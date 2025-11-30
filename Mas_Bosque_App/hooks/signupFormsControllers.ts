@@ -1,4 +1,4 @@
-import React, { useState } from "react"; // Import useState
+import { useState } from "react"; // Import useState
 import { router } from "expo-router";
 import { useSignup } from "@/app/(auth)/signup/SignUpContext";
 
