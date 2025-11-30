@@ -17,7 +17,7 @@ export const logInSupabase = async (
   const { data: profileData, error: profileError } = await supabase
     .from("user_profile")
     .select(
-      "id, first_name, last_name, blood_type, allergies, medical_conditions, medications"
+      "id, first_name, last_name, blood_type, allergies, medical_conditions, medications, role"
     )
     .eq("id", data.user?.id)
     .single();

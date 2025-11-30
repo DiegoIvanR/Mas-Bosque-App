@@ -69,7 +69,8 @@ export const initDatabase = async () => {
       blood_type TEXT,
       allergies TEXT,
       medical_conditions TEXT,
-      medications TEXT
+      medications TEXT,
+      role TEXT
     );
 
     CREATE TABLE IF NOT EXISTS emergency_contacts (
@@ -124,7 +125,7 @@ export const initDatabase = async () => {
 // --- USER & CONTACT FUNCTIONS ---
 export const saveUserDataLocally = async (profile: any, contact: any) => {
   await db.runAsync(
-    `INSERT OR REPLACE INTO user_profile (id, first_name, last_name, blood_type, allergies, medical_conditions, medications) 
+    `INSERT OR REPLACE INTO user_profile (id, first_name, last_name, blood_type, allergies, medical_conditions, medications, role) 
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [
       profile.id,
@@ -134,6 +135,7 @@ export const saveUserDataLocally = async (profile: any, contact: any) => {
       profile.allergies,
       profile.medical_conditions,
       profile.medications,
+      profile.role,
     ]
   );
 
