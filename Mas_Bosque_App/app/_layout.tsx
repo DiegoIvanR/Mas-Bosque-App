@@ -1,29 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { View, ActivityIndicator, Text } from "react-native"; // Imports for loading screen
+import { View, ActivityIndicator, Text } from "react-native";
+import * as Sentry from "@sentry/react-native"; // 1. Import Sentry
+
 import { AuthProvider } from "../lib/auth";
 import { initDatabase } from "../lib/database";
+import Logger from "../utils/Logger"; // 2. Import your Logger
+
+// 3. Initialize Sentry (This connects your Logger.ts to the cloud)
+// Make sure EXPO_PUBLIC_SENTRY_DSN is in your .env file
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  debug: __DEV__, // Only show debug logs in development
+  tracesSampleRate: 1.0, // Capture 100% of transactions for performance monitoring
+});
 
 export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const setup = async () => {
+      Logger.log("App launching, starting database setup..."); // 4. Log start
       try {
-        // Initialize the database (create tables if they don't exist)
         await initDatabase();
+        Logger.log("Database initialized successfully.");
         setIsReady(true);
-      } catch (e) {
-        console.error("Database initialization failed:", e);
+      } catch (e: any) {
+        // 5. Use Logger.error so this critical failure goes to Sentry
+        Logger.error("Database initialization failed", e);
       }
     };
 
     setup();
   }, []);
 
-  // 1. If database isn't ready, show a loading spinner
-  // This PREVENTS the tabs from loading and crashing
   if (!isReady) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -33,7 +44,8 @@ export default function RootLayout() {
     );
   }
 
-  // 2. Once ready, render the providers and stack
+  // 6. Optional: Wrap the export with Sentry to catch render errors
+  // You can just return the component, but Sentry.wrap gives better crash reports.
   return (
     <AuthProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -44,7 +56,6 @@ export default function RootLayout() {
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-          {/* The Route Details Modal */}
           <Stack.Screen
             name="route/[id]"
             options={{
@@ -57,7 +68,7 @@ export default function RootLayout() {
             options={{
               presentation: "modal",
               animation: "slide_from_bottom",
-              headerShown: false, // Hide the default header
+              headerShown: false,
             }}
           />
           <Stack.Screen
@@ -65,7 +76,7 @@ export default function RootLayout() {
             options={{
               presentation: "modal",
               animation: "slide_from_bottom",
-              headerShown: false, // Hide the default header
+              headerShown: false,
             }}
           />
         </Stack>
