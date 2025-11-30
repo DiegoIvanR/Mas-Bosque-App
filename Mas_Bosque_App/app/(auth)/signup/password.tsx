@@ -1,7 +1,7 @@
 import { useState } from "react"; // Import useState
 import { router } from "expo-router";
 import { useSignup } from "./SignUpContext"; // Fixed typo: was SignUpContext
-import PasswordView from "@/components/SignUpViews/PasswordView";
+import PasswordView from "@/views/SignUpViews/PasswordView";
 
 export default function SignupPassword() {
   // 1. Get the global state and setter

@@ -2,8 +2,8 @@ import { router } from "expo-router";
 import { useAuth } from "@/lib/auth";
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/SupabaseClient";
-import LoginView from "@/components/LogInViews/LogInView";
-import LoadingScreen from "@/components/LoadingScreen";
+import LoginView from "@/views/LogInView";
+import LoadingScreen from "@/views/LoadingScreen";
 import { checkSessionSupabase, logInSupabase } from "@/models/LogInModel";
 import { initDatabase, saveUserDataLocally } from "@/lib/database";
 export default function LoginScreen() {

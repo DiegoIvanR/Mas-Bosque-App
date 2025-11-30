@@ -5,7 +5,7 @@ import { useSignup } from "./SignUpContext"; // Corrected import path
 import { initDatabase, saveUserDataLocally } from "@/lib/database";
 import { useAuth } from "@/lib/auth"; // 1. Import useAuth
 import { signUpUser, userData } from "@/models/signUpModel";
-import EmContactView from "@/components/SignUpViews/EmContactView";
+import EmContactView from "@/views/SignUpViews/EmContactView";
 
 export default function SignupEMContact() {
   const { signupData, setSignupData } = useSignup();

@@ -1,7 +1,7 @@
 import { InterestPoint } from "@/lib/database";
 import * as Location from "expo-location";
 import useRecordingMapController from "@/hooks/recordingMapController";
-import { RecordingMapView } from "./RecordingMapView";
+import { RecordingMapView } from "../../views/RecordingViews/RecordingMapView";
 type RecordingMapViewProps = {
   routePath: { latitude: number; longitude: number }[];
   interestPoints: InterestPoint[];

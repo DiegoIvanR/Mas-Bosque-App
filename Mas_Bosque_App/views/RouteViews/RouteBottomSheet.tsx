@@ -13,7 +13,7 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Route } from "@/lib/database";
-import Button from "@/components/Button";
+import Button from "@/components/Helpers/Button";
 import { Comment, timeAgo, addComment } from "@/models/commentsModel";
 
 // Mock User ID for now (Replace with your auth logic)

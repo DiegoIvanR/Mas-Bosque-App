@@ -6,39 +6,32 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import InputBar from "@/components/InputBar";
-import Button from "@/components/Button";
+import InputBar from "@/components/Helpers/InputBar";
+import Button from "@/components/Helpers/Button";
 import { SignupData } from "@/app/(auth)/signup/SignUpContext";
-import GoBackButton from "../GoBackButton";
-type PasswordViewProps = {
+
+type SignUpViewProps = {
   signupData: SignupData;
   error: string;
-  isPasswordSecure: boolean;
-  loading: boolean;
-  isPasswordValid: boolean;
-  handlePasswordChange: (c: string) => void;
-  toggleSecureEntry: () => void;
+  validEmail: boolean;
+  handleEmailChange: (c: string) => void;
   handleClick: () => void;
+  handleClickLogIn: () => void;
 };
-export default function PasswordView({
+
+export default function SignUpView({
   signupData,
   error,
-  isPasswordSecure,
-  loading,
-  isPasswordValid,
-  handlePasswordChange,
-  toggleSecureEntry,
+  validEmail,
+  handleEmailChange,
   handleClick,
-}: PasswordViewProps) {
+  handleClickLogIn,
+}: SignUpViewProps) {
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* 2. Add the button here */}
-      <View style={styles.header}>
-        <GoBackButton />
-      </View>
-
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -47,30 +40,32 @@ export default function PasswordView({
           contentContainerStyle={styles.container}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.text}>Create a password</Text>
+          <Image source={require("@/assets/images/mas-bosque-logo.png")} />
+          <Text style={styles.text}>Let's start with email</Text>
 
           {/* Wrap InputBar and Error in a View for better layout */}
           <View style={styles.inputContainer}>
             <InputBar
-              value={signupData.password} // Read password from global state
-              onChangeText={handlePasswordChange} // Use new handler
-              placeholder="Password" // Add placeholder text
-              // --- 3. ADD THESE PROPS ---
-              secureTextEntry={isPasswordSecure} // Pass the state
-              onToggleSecureEntry={toggleSecureEntry} // Pass the function
-              autoCapitalize="none"
+              value={signupData.email} // Read from global state
+              onChangeText={handleEmailChange} // Use new handler
             />
             {/* 4. Display the error message */}
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
           </View>
 
-          {/* 7. Wrap the button in a full-width container */}
           <View style={styles.buttonContainer}>
             <Button
-              value={loading ? "Creating Account..." : "Continue"}
+              value="Continue"
               onClick={handleClick}
-              disabled={!isPasswordValid || loading} // 5. Pass disabled prop
+              disabled={validEmail}
             />
+          </View>
+
+          <View style={styles.textWrapper}>
+            <Text style={styles.subtext}>Already have an account?</Text>
+            <Text style={styles.signup} onPress={handleClickLogIn}>
+              LogIn
+            </Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -78,29 +73,21 @@ export default function PasswordView({
   );
 }
 
-// ... your styles (same as the other screen)
+// ... your styles remain the same
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#00160B",
   },
-  // 3. Add a style for the header
-  header: {
-    width: "100%",
-    paddingLeft: 20,
-    paddingTop: 10, // Make it float on top
-    zIndex: 10, // Ensure it's above the ScrollView
-  },
   keyboardAvoidingView: {
     flex: 1,
   },
   container: {
-    flexGrow: 0.5, // 4. FIX: Make style identical to index.tsx
+    flexGrow: 0.5, // This is the "good" style
     paddingHorizontal: 30,
     alignItems: "center",
-    justifyContent: "center", // 4. FIX: Make style identical to index.tsx
+    justifyContent: "center",
     gap: 35,
-    // Note: paddingTop: 80 is removed, justifyContent: "center" is back
   },
   text: {
     fontSize: 18,
@@ -115,7 +102,6 @@ const styles = StyleSheet.create({
     alignItems: "center", // Center InputBar
     gap: 8, // Space between input and error
   },
-  // 8. ADD THIS STYLE
   buttonContainer: {
     width: "100%",
     alignItems: "center",
@@ -123,7 +109,27 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 14,
     color: "#FF5A5A", // A common error color
+    // You might want to use a regular font weight here
     fontFamily: "Lato-Bold",
     textAlign: "center",
+  },
+  textWrapper: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    gap: 5,
+  },
+  subtext: {
+    fontSize: 14,
+    fontWeight: "500",
+    fontFamily: "SF Pro Rounded",
+    color: "#fff",
+    textAlign: "left",
+  },
+  signup: {
+    fontSize: 14,
+    fontWeight: "500",
+    fontFamily: "SF Pro Rounded",
+    color: "#06D23C",
+    textAlign: "left",
   },
 });

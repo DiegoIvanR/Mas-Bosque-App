@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   StyleSheet,
@@ -6,42 +6,42 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import InputBar from "@/components/InputBar";
-import Button from "@/components/Button";
-import GoBackButton from "@/components/GoBackButton";
+import InputBar from "@/components/Helpers/InputBar";
+import Button from "@/components/Helpers/Button";
 import { SignupData } from "@/app/(auth)/signup/SignUpContext";
-
-type EmContactViewProps = {
+import GoBackButton from "../../components/Helpers/GoBackButton";
+type MedicalViewProps = {
   signupData: SignupData;
   error: string;
-  loading: boolean;
   isValid: boolean;
-  handleNameChange: (c: string) => void;
-  handleLastName: (c: string) => void;
-  handlePhone: (c: string) => void;
-  handleRelationship: (c: string) => void;
+  handleBloodTypeChange: (c: string) => void;
+
+  handleAllergiesChange: (c: string) => void;
+  handleMedicationsChange: (c: string) => void;
+  handleMedicalConditionsChange: (c: string) => void;
   handleClick: () => void;
 };
 
-export default function EmContactView({
+export default function MedicalView({
   signupData,
   error,
-  loading,
   isValid,
-  handleNameChange,
-  handleLastName,
-  handlePhone,
-  handleRelationship,
+  handleBloodTypeChange,
+  handleAllergiesChange,
+  handleMedicationsChange,
+  handleMedicalConditionsChange,
   handleClick,
-}: EmContactViewProps) {
+}: MedicalViewProps) {
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* 3. Add the button here */}
+      {/* 2. Add the button here */}
       <View style={styles.header}>
         <GoBackButton />
       </View>
+
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -50,69 +50,65 @@ export default function EmContactView({
           contentContainerStyle={styles.container}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.text}>Who's your emergency contact?</Text>
+          <Text style={styles.text}>Medical Conditions</Text>
 
           <View style={styles.inputWrapper}>
-            <Text style={styles.subText}>Name</Text>
+            <Text style={styles.subText}>Blood Type</Text>
             <InputBar
-              value={signupData.contactName}
-              onChangeText={handleNameChange}
+              value={signupData.bloodType}
+              onChangeText={handleBloodTypeChange}
               autoCapitalize="words"
             />
           </View>
 
           <View style={styles.inputWrapper}>
-            <Text style={styles.subText}>Last Name</Text>
+            <Text style={styles.subText}>Allergies</Text>
             <InputBar
-              value={signupData.contactLastName}
-              onChangeText={handleLastName}
-              autoCapitalize="words"
+              value={signupData.allergies}
+              onChangeText={handleAllergiesChange}
+              autoCapitalize="sentences"
             />
           </View>
 
           <View style={styles.inputWrapper}>
-            <Text style={styles.subText}>Phone Number</Text>
+            <Text style={styles.subText}>Medications</Text>
             <InputBar
-              value={signupData.contactPhone}
-              onChangeText={handlePhone}
-              keyboardType="phone-pad"
+              value={signupData.medications}
+              onChangeText={handleMedicationsChange}
+              autoCapitalize="sentences"
             />
           </View>
 
           <View style={styles.inputWrapper}>
-            <Text style={styles.subText}>How are they related to you?</Text>
+            <Text style={styles.subText}>Got any medical conditions?</Text>
             <InputBar
-              value={signupData.contactRelationship}
-              onChangeText={handleRelationship}
-              autoCapitalize="words"
+              value={signupData.medicalConditions}
+              onChangeText={handleMedicalConditionsChange}
+              autoCapitalize="sentences"
             />
           </View>
 
-          {/* --- ADDED THIS SECTION --- */}
           <View style={styles.buttonContainer}>
-            {/* Display the error message */}
+            {/* 3. Display error */}
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
             <Button
-              value={loading ? "Finishing..." : "Continue"}
+              value="Continue"
               onClick={handleClick}
-              disabled={!isValid || loading} // 2. Add disabled prop
+              disabled={!isValid} // 4. Add disabled prop
             />
           </View>
-          {/* --- END OF SECTION --- */}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-// ... (styles remain the same) ...
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#00160B",
   },
-  // 4. Add header style
+  // 3. Add header style
   header: {
     width: "100%",
     paddingLeft: 20,
@@ -123,7 +119,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    flexGrow: 0.5, // 5. Fix: Make style identical to index.tsx
+    flexGrow: 0.5, // 4. Fix: Make style identical to index.tsx
     paddingHorizontal: 30,
     alignItems: "center",
     justifyContent: "center",
@@ -149,16 +145,16 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "left",
   },
-  // --- ADDED THESE STYLES ---
   buttonContainer: {
-    width: "100%", // Ensure it takes full width for alignment
-    alignItems: "center", // Center Button
-    gap: 8, // Space between error and button
+    width: "100%",
+    alignItems: "center",
+    gap: 8, // Space for error
   },
+  // 5. Add error text style
   errorText: {
     fontSize: 14,
-    color: "#FF5A5A", // A common error color
-    fontFamily: "Lato-Bold", // Match other styles
+    color: "#FF5A5A",
+    fontFamily: "Lato-Bold",
     textAlign: "center",
   },
 });

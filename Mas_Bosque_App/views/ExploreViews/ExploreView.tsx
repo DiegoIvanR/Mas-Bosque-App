@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import SidebarSearchField from "@/components/SidebarSearchField";
+import SidebarSearchField from "@/components/Helpers/SidebarSearchField";
 import { MaterialIcons } from "@expo/vector-icons";
 
 type ExploreViewProps = {

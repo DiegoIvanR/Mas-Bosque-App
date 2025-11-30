@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Stack, router, useSegments } from "expo-router";
-import GoBackButton from "@/components/GoBackButton";
+import GoBackButton from "@/components/Helpers/GoBackButton";
 import { Platform } from "react-native";
 
 // This is the common parent. It provides the state.

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { router } from "expo-router";
 import { editProfileModel } from "@/models/editProfileModel";
-import LoadingScreen from "@/components/LoadingScreen";
-import ErrorScreen from "@/components/ErrorScreen";
+import LoadingScreen from "@/views/LoadingScreen";
+import ErrorScreen from "@/views/ErrorScreen";
 import { UserDataType } from "@/models/profileModel";
-import EditMedicalConditionsView from "@/components/ProfileViews/EditMedicalConditionsView";
+import EditMedicalConditionsView from "@/views/ProfileViews/EditMedicalConditionsView";
 
 export default function EditMedicalConditions() {
   const [bloodType, setBloodType] = useState("");

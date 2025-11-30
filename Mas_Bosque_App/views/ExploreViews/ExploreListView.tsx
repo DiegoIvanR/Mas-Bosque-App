@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { RoutePreview } from "@/models/ExploreModel";
-import RouteCard from "../RouteCard";
+import RouteCard from "../../components/RouteCard";
 
 type ExploreListViewProps = {
   routes: RoutePreview[];

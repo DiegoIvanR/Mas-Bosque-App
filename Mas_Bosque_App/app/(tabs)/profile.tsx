@@ -3,11 +3,11 @@ import { router } from "expo-router";
 import { useAuth } from "@/lib/auth";
 import { clearLocalData } from "@/lib/database";
 import { profileModel } from "@/models/profileModel";
-import ProfileView from "@/components/ProfileViews/ProfileView";
-import LoadingScreen from "@/components/LoadingScreen";
+import ProfileView from "@/views/ProfileViews/ProfileView";
+import LoadingScreen from "@/views/LoadingScreen";
 import { ContactDataType, UserDataType } from "@/models/editProfileModel";
 import { editProfileModel } from "@/models/editProfileModel";
-import ErrorScreen from "@/components/ErrorScreen";
+import ErrorScreen from "@/views/ErrorScreen";
 import { useFocusEffect } from "expo-router";
 import { useCallback } from "react";
 export default function Profile() {

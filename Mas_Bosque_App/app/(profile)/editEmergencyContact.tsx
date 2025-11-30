@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { router } from "expo-router";
-import LoadingScreen from "@/components/LoadingScreen";
+import LoadingScreen from "@/views/LoadingScreen";
 import { editProfileModel } from "@/models/editProfileModel";
-import EditEmergencyContactView from "@/components/ProfileViews/EditEmergencyContactView";
-import ErrorScreen from "@/components/ErrorScreen";
+import EditEmergencyContactView from "@/views/ProfileViews/EditEmergencyContactView";
+import ErrorScreen from "@/views/ErrorScreen";
 export default function EditEmergencyContact() {
   const [loading, setLoading] = useState(true);
 

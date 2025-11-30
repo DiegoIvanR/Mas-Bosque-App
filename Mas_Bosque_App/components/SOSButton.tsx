@@ -2,7 +2,7 @@
 import React, { useRef } from "react";
 import { createAnimationValue } from "@/models/sosButtonModel";
 import { createSOSController } from "@/hooks/sosButtonController";
-import { SOSButtonView } from "@/components/sosView";
+import { SOSButtonView } from "@/views/sosView";
 
 interface ButtonProps {
   onLongPressComplete: () => void;

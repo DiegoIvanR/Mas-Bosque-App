@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { ExploreModel, RoutePreview } from "@/models/ExploreModel"; // Import Model
-import { ExploreView } from "@/components/ExploreViews/ExploreView"; // Import View
+import { ExploreView } from "@/views/ExploreViews/ExploreView"; // Import View
 import { router } from "expo-router";
-import LoadingScreen from "@/components/LoadingScreen";
-import ErrorScreen from "@/components//ErrorScreen";
-import ExploreListView from "@/components/ExploreViews/ExploreListView";
+import LoadingScreen from "@/views/LoadingScreen";
+import ErrorScreen from "@/views/ErrorScreen";
+import ExploreListView from "@/views/ExploreViews/ExploreListView";
 
 const PAGE_SIZE = 10;
 

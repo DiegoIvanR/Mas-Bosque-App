@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
-import LoadingScreen from "@/components/LoadingScreen";
-import ErrorScreen from "@/components/ErrorScreen";
-import { RouteDetailView } from "@/components/RouteViews/RouteDetailView";
+import LoadingScreen from "@/views/LoadingScreen";
+import ErrorScreen from "@/views/ErrorScreen";
+import { RouteDetailView } from "@/views/RouteDetailView";
 import { useRoutesController } from "@/hooks/routesController";
 import { useEffect } from "react";
 export default function RouteDetailScreen() {

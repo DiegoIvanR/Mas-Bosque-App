@@ -1,7 +1,7 @@
 import React, { useState } from "react"; // Import useState
 import { router } from "expo-router";
 import { useSignup } from "./SignUpContext"; // Fixed typo: was SignUpContext
-import SignUpView from "@/components/SignUpViews/SignUpView";
+import SignUpView from "@/views/SignUpViews/SignUpView";
 // A simple regex for email validation
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

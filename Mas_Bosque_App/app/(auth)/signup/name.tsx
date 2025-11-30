@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { router } from "expo-router";
 import { useSignup } from "./SignUpContext";
-import NameView from "@/components/SignUpViews/NameView";
+import NameView from "@/views/SignUpViews/NameView";
 export default function SignupName() {
   const { signupData, setSignupData } = useSignup();
   const [error, setError] = useState("");

@@ -9,27 +9,33 @@ import {
   Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import InputBar from "@/components/InputBar";
-import Button from "@/components/Button";
-import { SignupData } from "@/app/(auth)/signup/SignUpContext";
+import InputBar from "@/components/Helpers/InputBar";
+import Button from "@/components/Helpers/Button";
 
-type SignUpViewProps = {
-  signupData: SignupData;
+type LogInProps = {
   error: string;
-  validEmail: boolean;
-  handleEmailChange: (c: string) => void;
-  handleClick: () => void;
-  handleClickLogIn: () => void;
+  isPasswordSecure: boolean;
+  loading: boolean;
+  email: string;
+  password: string;
+  setEmail: (c: string) => void;
+  setPassword: (c: string) => void;
+  handleLogin: () => void;
+  handleSignUp: () => void;
+  toggleSecureEntry: () => void;
 };
-
-export default function SignUpView({
-  signupData,
+export default function LoginView({
   error,
-  validEmail,
-  handleEmailChange,
-  handleClick,
-  handleClickLogIn,
-}: SignUpViewProps) {
+  isPasswordSecure,
+  loading,
+  email,
+  password,
+  setEmail,
+  setPassword,
+  handleLogin,
+  handleSignUp,
+  toggleSecureEntry,
+}: LogInProps) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -41,31 +47,41 @@ export default function SignUpView({
           keyboardShouldPersistTaps="handled"
         >
           <Image source={require("@/assets/images/mas-bosque-logo.png")} />
-          <Text style={styles.text}>Let's start with email</Text>
 
-          {/* Wrap InputBar and Error in a View for better layout */}
+          <Text style={styles.text}>Log In</Text>
+
           <View style={styles.inputContainer}>
             <InputBar
-              value={signupData.email} // Read from global state
-              onChangeText={handleEmailChange} // Use new handler
+              value={email}
+              onChangeText={(text) => setEmail(text)}
+              placeholder="Email"
+              // Add props like autoCapitalize="none" to your InputBar!
             />
-            {/* 4. Display the error message */}
+          </View>
+
+          <View style={styles.inputContainer}>
+            <InputBar
+              value={password}
+              onChangeText={(text) => setPassword(text)}
+              placeholder="Password"
+              secureTextEntry={isPasswordSecure} // Pass the state
+              onToggleSecureEntry={toggleSecureEntry} // Pass the function
+            />
+            {/* Display the error message */}
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
           </View>
 
           <View style={styles.buttonContainer}>
             <Button
-              value="Continue"
-              onClick={handleClick}
-              disabled={validEmail}
+              value={loading ? "Logging in..." : "Log In"}
+              onClick={handleLogin}
             />
-          </View>
-
-          <View style={styles.textWrapper}>
-            <Text style={styles.subtext}>Already have an account?</Text>
-            <Text style={styles.signup} onPress={handleClickLogIn}>
-              LogIn
-            </Text>
+            <View style={styles.textWrapper}>
+              <Text style={styles.subtext}>Don't have an account?</Text>
+              <Text style={styles.signup} onPress={handleSignUp}>
+                SignUp
+              </Text>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -73,7 +89,7 @@ export default function SignUpView({
   );
 }
 
-// ... your styles remain the same
+// Merged styles from your login screen and signup screen
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -83,20 +99,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
-    flexGrow: 0.5, // This is the "good" style
+    flexGrow: 0.6, // ensures ScrollView content expands properly
     paddingHorizontal: 30,
     alignItems: "center",
     justifyContent: "center",
     gap: 35,
   },
   text: {
-    fontSize: 18,
+    fontSize: 24, // Made text bigger
     fontWeight: "700",
     fontFamily: "Lato-Bold",
     color: "#fff",
     textAlign: "center",
   },
-  // 5. Add styles for the error and the input container
   inputContainer: {
     width: "100%", // Ensure it takes full width for alignment
     alignItems: "center", // Center InputBar
@@ -105,11 +120,11 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: "100%",
     alignItems: "center",
+    gap: 15, // Space between buttons
   },
   errorText: {
     fontSize: 14,
     color: "#FF5A5A", // A common error color
-    // You might want to use a regular font weight here
     fontFamily: "Lato-Bold",
     textAlign: "center",
   },

@@ -1,13 +1,13 @@
 import { router, useFocusEffect } from "expo-router";
 import { useState, useCallback } from "react";
-import ErrorScreen from "@/components/ErrorScreen";
-import EditView from "@/components/ProfileViews/EditView";
+import ErrorScreen from "@/views/ErrorScreen";
+import EditView from "@/views/ProfileViews/EditView";
 import {
   ContactDataType,
   editProfileModel,
   UserDataType,
 } from "@/models/editProfileModel";
-import LoadingScreen from "@/components/LoadingScreen";
+import LoadingScreen from "@/views/LoadingScreen";
 // --- Main Component ---
 export default function EditProfile() {
   const [profile, setProfile] = useState<UserDataType | null>(null);

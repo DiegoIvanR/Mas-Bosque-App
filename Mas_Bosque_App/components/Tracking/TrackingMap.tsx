@@ -1,7 +1,7 @@
 import { useTrackingMapController } from "@/hooks/trackingMapController";
 import { Route } from "@/lib/database";
 import * as Location from "expo-location";
-import { TrackingMapView } from "./TrackingMapView";
+import { TrackingMapView } from "../../views/TrackingViews/TrackingMapView";
 
 type TrackingMapProps = {
   routePolyline: Route["route_data"];

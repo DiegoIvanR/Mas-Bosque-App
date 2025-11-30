@@ -1,7 +1,7 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, StyleSheet } from "react-native";
-import Button from "@/components/Button";
-import InitialsAvatar from "@/components/InitialsAvatar";
+import Button from "@/components/Helpers/Button";
+import InitialsAvatar from "@/components/Helpers/InitialsAvatar";
 import { UserDataType } from "@/models/profileModel";
 type ProfileViewProps = {
   user: UserDataType | null;

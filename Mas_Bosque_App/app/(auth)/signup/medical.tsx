@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { router } from "expo-router";
 import { useSignup } from "./SignUpContext";
-import MedicalView from "@/components/SignUpViews/MedicalView";
+import MedicalView from "@/views/SignUpViews/MedicalView";
 export default function SignupMedical() {
   const { signupData, setSignupData } = useSignup();
   const [error, setError] = useState("");

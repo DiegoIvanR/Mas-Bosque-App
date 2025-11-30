@@ -2,8 +2,8 @@ import React from "react";
 import { StyleSheet, View, ActivityIndicator, Text } from "react-native";
 import { Route } from "@/lib/database";
 import { TrackingState } from "@/lib/useTrackingSession";
-import TrackingMap from "./TrackingMap";
-import { TrackingStatsOverlay } from "../TrackingStatsOverlay";
+import TrackingMap from "../../components/Tracking/TrackingMap";
+import { TrackingStatsOverlay } from "../../components/TrackingStatsOverlay";
 
 type TrackingViewProps = {
   routePolyline: Route["route_data"];

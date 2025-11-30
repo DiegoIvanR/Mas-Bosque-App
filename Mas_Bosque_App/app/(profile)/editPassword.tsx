@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { Alert } from "react-native";
 import { router } from "expo-router";
 import { editProfileModel } from "@/models/editProfileModel";
-import EditPasswordView from "@/components/ProfileViews/EditPasswordView";
-import LoadingScreen from "@/components/LoadingScreen";
-import ErrorScreen from "@/components/ErrorScreen";
+import EditPasswordView from "@/views/ProfileViews/EditPasswordView";
+import LoadingScreen from "@/views/LoadingScreen";
+import ErrorScreen from "@/views/ErrorScreen";
 
 export default function EditPassword() {
   const [currentPassword, setCurrentPassword] = useState("");

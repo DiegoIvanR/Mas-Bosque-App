@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useLocalSearchParams, router } from "expo-router";
 import { Route } from "@/lib/database";
 import { useTrackingSession } from "@/lib/useTrackingSession";
-import { TrackingView } from "@/components/TrackingViews/TrackingView";
+import { TrackingView } from "@/views/TrackingViews/TrackingView";
 import { fetchRouteSupabase } from "@/models/routesModel";
-import LoadingScreen, { LoadingLocation } from "@/components/LoadingScreen";
-import ErrorScreen from "@/components/ErrorScreen";
+import LoadingScreen, { LoadingLocation } from "@/views/LoadingScreen";
+import ErrorScreen from "@/views/ErrorScreen";
 // --- CONTROLLER ---
 export default function TrackingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

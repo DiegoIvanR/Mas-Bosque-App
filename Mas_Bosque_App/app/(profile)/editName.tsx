@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { router } from "expo-router";
 import { editProfileModel, UserDataType } from "@/models/editProfileModel";
-import LoadingScreen from "@/components/LoadingScreen";
-import ErrorScreen from "@/components/ErrorScreen";
-import EditNameView from "@/components/ProfileViews/EditNameView";
+import LoadingScreen from "@/views/LoadingScreen";
+import ErrorScreen from "@/views/ErrorScreen";
+import EditNameView from "@/views/ProfileViews/EditNameView";
 
 export default function EditName() {
   const [firstName, setFirstName] = useState("");

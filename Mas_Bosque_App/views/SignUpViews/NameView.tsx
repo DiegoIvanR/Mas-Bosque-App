@@ -6,33 +6,27 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import InputBar from "@/components/InputBar";
-import Button from "@/components/Button";
+import InputBar from "@/components/Helpers/InputBar";
+import Button from "@/components/Helpers/Button";
 import { SignupData } from "@/app/(auth)/signup/SignUpContext";
-import GoBackButton from "../GoBackButton";
+import GoBackButton from "../../components/Helpers/GoBackButton";
 type MedicalViewProps = {
   signupData: SignupData;
   error: string;
   isValid: boolean;
-  handleBloodTypeChange: (c: string) => void;
-
-  handleAllergiesChange: (c: string) => void;
-  handleMedicationsChange: (c: string) => void;
-  handleMedicalConditionsChange: (c: string) => void;
+  handleNameChange: (c: string) => void;
+  handleLastNameChange: (c: string) => void;
   handleClick: () => void;
 };
 
-export default function MedicalView({
+export default function NameView({
   signupData,
   error,
   isValid,
-  handleBloodTypeChange,
-  handleAllergiesChange,
-  handleMedicationsChange,
-  handleMedicalConditionsChange,
+  handleNameChange,
+  handleLastNameChange,
   handleClick,
 }: MedicalViewProps) {
   return (
@@ -50,41 +44,23 @@ export default function MedicalView({
           contentContainerStyle={styles.container}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.text}>Medical Conditions</Text>
+          <Text style={styles.text}>Let’s get to know you</Text>
 
           <View style={styles.inputWrapper}>
-            <Text style={styles.subText}>Blood Type</Text>
+            <Text style={styles.subText}>Name</Text>
             <InputBar
-              value={signupData.bloodType}
-              onChangeText={handleBloodTypeChange}
+              value={signupData.name}
+              onChangeText={handleNameChange}
               autoCapitalize="words"
             />
           </View>
 
           <View style={styles.inputWrapper}>
-            <Text style={styles.subText}>Allergies</Text>
+            <Text style={styles.subText}>Last Name</Text>
             <InputBar
-              value={signupData.allergies}
-              onChangeText={handleAllergiesChange}
-              autoCapitalize="sentences"
-            />
-          </View>
-
-          <View style={styles.inputWrapper}>
-            <Text style={styles.subText}>Medications</Text>
-            <InputBar
-              value={signupData.medications}
-              onChangeText={handleMedicationsChange}
-              autoCapitalize="sentences"
-            />
-          </View>
-
-          <View style={styles.inputWrapper}>
-            <Text style={styles.subText}>Got any medical conditions?</Text>
-            <InputBar
-              value={signupData.medicalConditions}
-              onChangeText={handleMedicalConditionsChange}
-              autoCapitalize="sentences"
+              value={signupData.lastName}
+              onChangeText={handleLastNameChange}
+              autoCapitalize="words"
             />
           </View>
 
@@ -148,7 +124,8 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: "100%",
     alignItems: "center",
-    gap: 8, // Space for error
+    marginTop: 20, // Add some space above button
+    gap: 8, // Space for error message
   },
   // 5. Add error text style
   errorText: {

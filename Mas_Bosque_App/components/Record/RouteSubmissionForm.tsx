@@ -1,5 +1,5 @@
 import { useRouteSubmission } from "@/hooks/routeSubmissionController";
-import RouteSubmissionFormView from "./RouteSubmissionView";
+import RouteSubmissionFormView from "../../views/RecordingViews/RouteSubmissionView";
 
 type Props = {
   visible: boolean;
