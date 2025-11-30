@@ -1,86 +1,80 @@
 import { useState } from "react";
 import { router } from "expo-router";
 import { useSignup } from "@/app/(auth)/signup/SignUpContext";
-// 1. Import your new database functions
 import { initDatabase } from "@/lib/database";
-import { useAuth } from "@/lib/auth"; // 1. Import useAuth
+import { useAuth } from "@/lib/auth";
 import { signUpUser, userData } from "@/models/signUpModel";
+import Logger from "@/utils/Logger";
 
 export default function useSignupController() {
   const { signupData, setSignupData } = useSignup();
-  const { setIsLoggedIn } = useAuth(); // 2. Get the setter function
+  const { setIsLoggedIn } = useAuth();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 1. Validation constant
   const isValid =
     signupData.contactName.trim().length > 0 &&
     signupData.contactPhone.trim().length > 0;
 
   const handleClick = async () => {
-    // 3. Validate contact info (simple check)
     if (!isValid) {
+      Logger.warn("Signup failed: Invalid contact info");
       setError("Please fill in at least the contact's name and phone number.");
       return;
     }
 
-    setLoading(true); // Start loading
-    setError(""); // Clear previous errors
+    setLoading(true);
+    setError("");
     let userData: userData | null = null;
+
+    Logger.log("Starting user registration");
 
     try {
       userData = await signUpUser(signupData);
     } catch (e: any) {
+      Logger.error("SignUp API failed", e);
       setError(e);
     } finally {
       setLoading(false);
     }
 
     if (userData) {
-      // --- 2. SAVE TO SQLITE ON SUCCESS ---
       try {
-        await initDatabase(); // Ensure tables exist
-        // Save the data returned from Supabase (it's the most reliable)
-        //await saveUserDataLocally(userData.profile, userData.contact);
+        Logger.log("Initializing local DB after signup");
+        await initDatabase();
+        // await saveUserDataLocally(userData.profile, userData.contact);
       } catch (dbError: any) {
-        console.error("Failed to save data locally:", dbError.message);
-        // Don't block the user for a local DB error, just log it.
+        // Log locally, don't stop flow
+        Logger.error("Failed to save data locally during signup", dbError);
       }
 
-      // 3. SET THE GLOBAL AUTH STATE
+      Logger.log("Signup successful, redirecting to login");
       setIsLoggedIn(false);
-      router.replace("/(auth)/login"); // Success!
+      router.replace("/(auth)/login");
     } else {
+      Logger.error("Signup failed: No user data returned");
       setError(
         "An unexpected error occurred (contact not saved). Please try again."
       );
     }
 
-    setLoading(false); // Stop loading
+    setLoading(false);
   };
 
   const handleNameChange = (contactName: string) => {
-    if (error) {
-      setError("");
-    }
+    if (error) setError("");
     setSignupData((prev) => ({ ...prev, contactName }));
   };
   const handleLastName = (contactLastName: string) => {
-    if (error) {
-      setError("");
-    }
+    if (error) setError("");
     setSignupData((prev) => ({ ...prev, contactLastName }));
   };
   const handlePhone = (contactPhone: string) => {
-    if (error) {
-      setError("");
-    }
+    if (error) setError("");
     setSignupData((prev) => ({ ...prev, contactPhone }));
   };
   const handleRelationship = (contactRelationship: string) => {
-    if (error) {
-      setError("");
-    }
+    if (error) setError("");
     setSignupData((prev) => ({ ...prev, contactRelationship }));
   };
 

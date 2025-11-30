@@ -5,6 +5,7 @@ import {
   startProgressAnimation,
   resetProgressAnimation,
 } from "@/models/sosButtonModel";
+import Logger from "@/utils/Logger"; // Import Logger
 
 export function createSOSController(
   progress: Animated.Value,
@@ -12,31 +13,36 @@ export function createSOSController(
   isDisabled?: boolean,
   isCooldown?: boolean
 ) {
-  // Use `number | null` for compatibility with React Native's `setTimeout`
   const holdTimeout: MutableRefObject<ReturnType<typeof setTimeout> | null> = {
     current: null,
   };
 
   const handlePressIn = () => {
-    if (isDisabled || isCooldown) return;
+    if (isDisabled || isCooldown) {
+      Logger.log("SOS Press ignored (Disabled or Cooldown)", {
+        isDisabled,
+        isCooldown,
+      });
+      return;
+    }
 
-    // Start the progress animation
+    Logger.log("SOS Button Press initiated");
     startProgressAnimation(progress).start();
 
-    // Set a timeout to trigger the long press action
     holdTimeout.current = setTimeout(() => {
+      Logger.warn("SOS Long Press Completed - Triggering Action");
       onLongPressComplete();
     }, HOLD_DURATION);
   };
 
   const handlePressOut = () => {
-    // Clear the timeout if the press is released early
     if (holdTimeout.current) {
+      // If we are clearing the timeout, it means the user let go before the SOS triggered
+      Logger.log("SOS Button released early - Action cancelled");
       clearTimeout(holdTimeout.current);
       holdTimeout.current = null;
     }
 
-    // Reset the progress animation
     resetProgressAnimation(progress).start();
   };
 

@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import MapView from "react-native-maps";
-
 import * as Location from "expo-location";
+import Logger from "@/utils/Logger"; // Import Logger
 
 export default function useRecordingMapController(
   currentLocation: Location.LocationObject | null,
@@ -11,6 +11,7 @@ export default function useRecordingMapController(
 
   useEffect(() => {
     if (currentLocation && mapRef.current) {
+      // We do not log here to avoid spamming logs on every location update
       mapRef.current.animateCamera({
         center: currentLocation.coords,
         heading: heading?.trueHeading || 0,

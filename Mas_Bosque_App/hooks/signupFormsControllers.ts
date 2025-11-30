@@ -1,6 +1,7 @@
-import { useState } from "react"; // Import useState
+import { useState } from "react";
 import { router } from "expo-router";
 import { useSignup } from "@/app/(auth)/signup/SignUpContext";
+import Logger from "@/utils/Logger"; // Import Logger
 
 export function useEmailController() {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -11,21 +12,22 @@ export function useEmailController() {
 
   const handleClick = () => {
     if (!emailRegex.test(signupData.email)) {
+      const msg = "Invalid email entered during signup";
+      Logger.warn(msg, { email: signupData.email });
       setError("Please enter a valid email address.");
     } else {
-      setError(""); // Clear error
+      setError("");
+      Logger.log("Email validation passed", { email: signupData.email });
       router.push("/signup/password");
     }
   };
   const handleClickLogIn = () => {
-    router.push("/login"); // Fixed path
+    Logger.log("Navigating to login from signup email screen");
+    router.push("/login");
   };
 
   const handleEmailChange = (email: string) => {
-    // Clear error as user types
-    if (error) {
-      setError("");
-    }
+    if (error) setError("");
     setSignupData((prev) => ({ ...prev, email }));
   };
 
@@ -48,9 +50,11 @@ export function useMedicalController() {
 
   const handleClick = () => {
     if (!isValid) {
+      Logger.warn("Blood type validation failed");
       setError("Please enter your blood type.");
     } else {
       setError("");
+      Logger.log("Medical info step completed");
       router.push("/signup/emcontact");
     }
   };
@@ -83,15 +87,19 @@ export function useNameController() {
   const { signupData, setSignupData } = useSignup();
   const [error, setError] = useState("");
 
-  // 1. Create validation constant
   const isValid =
     signupData.name.trim().length > 0 && signupData.lastName.trim().length > 0;
 
   const handleClick = () => {
     if (!isValid) {
+      Logger.warn("Name validation failed");
       setError("Please fill in both your name and last name.");
     } else {
       setError("");
+      Logger.log("Name step completed", {
+        name: signupData.name,
+        lastName: signupData.lastName,
+      });
       router.push("/signup/medical");
     }
   };
@@ -114,43 +122,35 @@ export function useNameController() {
 }
 
 export function usePasswordController() {
-  // 1. Get the global state and setter
   const { signupData, setSignupData } = useSignup();
-  // 2. Add state for error and loading
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // --- 1. ADD THIS STATE ---
-  // This state will track if the password text is hidden or not
   const [isPasswordSecure, setIsPasswordSecure] = useState(true);
 
-  // --- 2. ADD THIS FUNCTION ---
-  // This is the callback function we will pass to the InputBar
   const toggleSecureEntry = () => {
     setIsPasswordSecure((previousState) => !previousState);
   };
 
-  // 3. Create validation constant
   const isPasswordValid = signupData.password.length >= 6;
 
   const handleClick = () => {
-    // 4. Validate the password (e.g., minimum 6 characters)
     if (!isPasswordValid) {
+      Logger.warn("Password validation failed (too short)");
       setError("Password must be at least 6 characters long.");
     } else {
       setError("");
-      // 6. Success! User is created. Navigate to the next step.
-      // (This runs even if email confirmation is required)
+      Logger.log("Password set successfully, proceeding to Name step");
       router.push("/signup/name");
     }
   };
 
   const handlePasswordChange = (password: string) => {
-    // Clear error as user types
     if (error) {
       setError("");
     }
-    // We don't trim passwords
+
     setSignupData((prev) => ({ ...prev, password }));
   };
 

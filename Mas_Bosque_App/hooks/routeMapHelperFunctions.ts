@@ -1,4 +1,6 @@
 import { router } from "expo-router";
+import Logger from "@/utils/Logger";
+
 export function routeMapHelperFunctions() {
   // Map style is co-located with the map component
   const darkMapStyle = [
@@ -99,17 +101,18 @@ export function routeMapHelperFunctions() {
   const getMarkerColor = (type: string) => {
     switch (type) {
       case "hazard":
-        return "#FF5A5A"; // Red
+        return "#FF5A5A";
       case "drop":
-        return "#FFA500"; // Orange
+        return "#FFA500";
       case "viewpoint":
-        return "#04FF0C"; // Green
+        return "#04FF0C";
       default:
         return "#FFFFFF";
     }
   };
 
   const goBack = () => {
+    Logger.log("Navigating back from Map View");
     router.back();
   };
 

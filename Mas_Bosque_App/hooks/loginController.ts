@@ -3,57 +3,64 @@ import { useAuth } from "@/lib/auth";
 import { useEffect, useState } from "react";
 import { checkSessionSupabase, logInSupabase } from "@/models/LogInModel";
 import { initDatabase, saveUserDataLocally } from "@/lib/database";
+import Logger from "@/utils/Logger"; // Import Logger
 
 export default function useLoginController() {
   const { setIsLoggedIn } = useAuth();
 
-  // State for the login form
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false); // For form submission
+  const [loading, setLoading] = useState(false);
 
-  // State for the initial session check
   const [checkingSession, setCheckingSession] = useState(true);
   const [isPasswordSecure, setIsPasswordSecure] = useState(true);
 
-  // --- 2. ADD THIS FUNCTION ---
-  // This is the callback function we will pass to the InputBar
   const toggleSecureEntry = () => {
     setIsPasswordSecure((previousState) => !previousState);
   };
 
-  // 2. Add a useEffect to check for an existing session on load
   useEffect(() => {
     const checkSession = async () => {
-      const data = await checkSessionSupabase();
-      if (data.session) {
-        // 3. User is already logged in!
-        setIsLoggedIn(true);
-        router.replace("/"); // Go to tab navigator
-      } else {
-        // 4. No session, show the login buttons
+      Logger.log("Checking for existing session...");
+      try {
+        const data = await checkSessionSupabase();
+        if (data.session) {
+          Logger.log("Session found, redirecting to home");
+          setIsLoggedIn(true);
+          router.replace("/");
+        } else {
+          Logger.log("No session found");
+          setCheckingSession(false);
+        }
+      } catch (e) {
+        Logger.error("Error checking session", e);
         setCheckingSession(false);
       }
     };
     checkSession();
-  }, []); // The empty array [] means this runs once when the component mounts
+  }, []);
 
   const handleLogin = async () => {
     setLoading(true);
     setError("");
+    Logger.log("Attempting login", { email }); // Don't log passwords
+
     try {
       const { data, profileData, emcontact } = await logInSupabase(
         email,
         password
       );
-      // Save the data returned from Supabase (it's the most reliable)
+
+      Logger.log("Supabase login successful, syncing local DB");
       await initDatabase();
       await saveUserDataLocally(profileData, emcontact);
+
       setIsLoggedIn(true);
-      router.replace("/"); // Go to tab navigator
+      router.replace("/");
       return;
     } catch (e: any) {
+      Logger.error("Login failed", e, { email });
       setError(e);
     } finally {
       setLoading(false);
@@ -61,6 +68,7 @@ export default function useLoginController() {
   };
 
   const handleSignUp = () => {
+    Logger.log("Navigating to Sign Up");
     router.replace("/(auth)/signup");
   };
 

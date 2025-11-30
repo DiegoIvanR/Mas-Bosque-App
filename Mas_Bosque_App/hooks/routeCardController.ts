@@ -1,7 +1,7 @@
-// controller.ts
 import { useState, useEffect } from "react";
 import { router } from "expo-router";
 import { updateRouteSaveStatus, RoutePreview } from "@/models/routeCardModel";
+import Logger from "@/utils/Logger"; // Import Logger
 
 export function useRouteCardController(route: RoutePreview) {
   const [isSaved, setIsSaved] = useState(route.saved || false);
@@ -13,9 +13,12 @@ export function useRouteCardController(route: RoutePreview) {
 
   const onPressCard = () => {
     if (!route.id) {
-      console.error("Route ID is missing.");
+      Logger.error("Route ID is missing on card press", null, {
+        routeName: route.name,
+      });
       return;
     }
+    Logger.log("Navigating to route details", { routeId: route.id });
     router.push(`/route/${route.id}`);
   };
 
@@ -25,6 +28,7 @@ export function useRouteCardController(route: RoutePreview) {
     const newState = !isSaved;
     setIsSaved(newState);
 
+    Logger.log(`Toggling save status`, { routeId: route.id, newState });
     updateRouteSaveStatus(route.id, newState);
   };
 

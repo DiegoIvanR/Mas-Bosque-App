@@ -13,6 +13,7 @@ import {
 import { fetchRouteSupabase } from "@/models/routesModel";
 import { Comment, getComments, addComment } from "@/models/commentsModel";
 import { previewRouteModel } from "@/models/previewRouteModel";
+import Logger from "@/utils/Logger";
 
 export function useRoutesController(id: string, isOffline?: string) {
   const [route, setRoute] = useState<Route | null>(null);
@@ -35,37 +36,36 @@ export function useRoutesController(id: string, isOffline?: string) {
   const [commentsLoading, setCommentsLoading] = useState(true);
   const [commentsError, setCommentsError] = useState<string | null>(null);
 
-  // 🔎 Debug state transitions (improvement from version 2)
   useEffect(() => {
-    console.log(`[STATE UPDATE] Loading: ${loading}, Route Loaded: ${!!route}`);
+    Logger.log(
+      `[RouteController State] Loading: ${loading}, Route Loaded: ${!!route}`,
+      { routeId: id }
+    );
   }, [loading, route]);
 
-  // Permissions
   useEffect(() => {
     try {
       previewRouteModel.getLocationPermision();
       setHasLocationPermission(true);
     } catch (error: any) {
+      Logger.error("Failed to get location permission", error);
       setError(error.message);
     }
   }, []);
 
   // --- FETCH ROUTE LOGIC ---
   useEffect(() => {
-    // 1. Guard Clause: If no ID, stop.
     if (!id) return;
 
     let isMounted = true;
-    console.log("Fetching route with ID:", id);
+    Logger.log("Fetching route", { id, isOffline });
 
     async function fetchRoute() {
-      // 2. ONLY set loading true if we don't already have data for this ID
-      // This prevents the screen flickering or getting stuck if the effect re-runs
       setLoading(true);
       setError(null);
 
       try {
-        const isSaved = await checkIfRouteIsSaved(id!); // check db
+        const isSaved = await checkIfRouteIsSaved(id!);
         if (!isMounted) return;
         setIsDownloaded(isSaved);
 
@@ -79,28 +79,24 @@ export function useRoutesController(id: string, isOffline?: string) {
         }
 
         if (!isMounted) return;
-
-        // 3. Batch Updates: Set data and loading together
         setRoute(data);
       } catch (e: any) {
         if (!isMounted) return;
-        console.error("Error fetching route:", e.message);
+        Logger.error("Error fetching route data", e, { id, isOffline });
         setError(e.message || "Failed to fetch route data.");
       } finally {
         if (isMounted) {
-          // 4. Crucial: Ensure this runs to unblock the UI
           setLoading(false);
-          console.log("[CONTROLLER] Fetch finished, Loading set to FALSE");
+          Logger.log("Route fetch finished");
         }
       }
     }
 
     fetchRoute();
-
     return () => {
       isMounted = false;
     };
-  }, [id, isOffline]); // Dependency array
+  }, [id, isOffline]);
 
   // --- COMMENTS LOGIC ---
   const fetchCommentSection = useCallback(() => {
@@ -114,6 +110,7 @@ export function useRoutesController(id: string, isOffline?: string) {
         const result = await getComments(id);
         setComments(result);
       } catch (e: any) {
+        Logger.error("Failed to fetch comments", e, { routeId: id });
         setCommentsError(e.message || "Failed to fetch comments.");
       } finally {
         setCommentsLoading(false);
@@ -144,6 +141,7 @@ export function useRoutesController(id: string, isOffline?: string) {
 
   const onMapReady = useCallback(() => {
     if (route?.route_data && mapRef.current) {
+      Logger.log("Map ready, fitting coordinates");
       mapRef.current.fitToCoordinates(route.route_data, {
         edgePadding: { top: 100, right: 50, bottom: 300, left: 50 },
         animated: true,
@@ -158,20 +156,25 @@ export function useRoutesController(id: string, isOffline?: string) {
       if (isDownloaded) {
         await deleteLocalRouteById(route.id);
         setIsDownloaded(false);
+        Logger.log("Route removed from local saves", { routeId: route.id });
         ToastAndroid.show("Route removed from local saves", ToastAndroid.SHORT);
       } else {
         await saveRouteLocally(route);
         setIsDownloaded(true);
+        Logger.log("Route saved locally", { routeId: route.id });
         ToastAndroid.show("Route saved for offline use!", ToastAndroid.SHORT);
       }
     } catch (e: any) {
-      console.error("Failed to toggle download:", e.message);
+      Logger.error("Failed to toggle download status", e, {
+        routeId: route.id,
+      });
       ToastAndroid.show("Action failed", ToastAndroid.SHORT);
     }
   }, [route, isDownloaded]);
 
   const handleStart = useCallback(() => {
     if (!route) return;
+    Logger.log("Starting route tracking", { routeId: route.id });
     router.push({
       pathname: "/route/tracking",
       params: { id: route.id },
@@ -183,6 +186,10 @@ export function useRoutesController(id: string, isOffline?: string) {
     setIsPosting(true);
 
     try {
+      Logger.log("Posting comment", {
+        routeId: route!.id,
+        isReply: !!replyingTo,
+      });
       await addComment(route!.id, inputText, replyingTo?.id || null);
 
       setInputText("");
@@ -192,6 +199,7 @@ export function useRoutesController(id: string, isOffline?: string) {
 
       fetchCommentSection();
     } catch (e) {
+      Logger.error("Failed to post comment", e, { routeId: route?.id });
       alert("Failed to post comment");
     } finally {
       setIsPosting(false);
