@@ -75,7 +75,7 @@ export default function useRecordController() {
       await uploadSessionToSupabase(localSessionId);
 
       Alert.alert("Success", "Route uploaded successfully!", [
-        { text: "OK", onPress: () => router.replace("/(tabs)/saved") },
+        { text: "OK", onPress: () => router.replace("/(tabs)") },
       ]);
     } catch (e: any) {
       Alert.alert(
