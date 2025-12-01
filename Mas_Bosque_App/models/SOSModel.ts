@@ -1,5 +1,38 @@
 import { supabase } from "@/lib/SupabaseClient"; // Import your supabase client
 import * as Location from "expo-location";
+// red pending, and yellow if processing. attended doesnt appear
+// --- TYPES ---
+export type EmergencyContact = {
+  id: number;
+  name: string;
+  last_name: string | null;
+  phone: string;
+  relationship: string;
+};
+
+export type UserProfile = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  blood_type: string;
+  allergies: string;
+  medical_conditions: string;
+  medications: string;
+  phone?: string; // Sometimes profile has phone, or we use contact
+};
+
+export type SOSRequest = {
+  id: string;
+  user_id: string;
+  latitud: number;
+  longitud: number;
+  timestamp_inicio: string;
+  tipo_emergencia: string | null;
+  estado: "attended" | "pending" | "processing";
+  // Joined tables
+  user_profile: UserProfile;
+  emergency_contacts: EmergencyContact[];
+};
 
 export const SOSModel = {
   /**
@@ -48,6 +81,62 @@ export const SOSModel = {
     } catch (e) {
       console.error("Model Error: Failed to update SOS type", e);
       return false;
+    }
+  },
+
+  async fetchActiveSOS(): Promise<SOSRequest[]> {
+    console.log("initialize fetch sos");
+    const { data: sosData, error: sosError } = await supabase
+      .from("SOS")
+      .select(
+        `
+      *,
+      user_profile (*)
+    `
+      )
+      .neq("estado", "attended");
+
+    if (sosError) {
+      throw new Error(sosError.message);
+    }
+    if (!sosData || sosData.length === 0) return [];
+
+    // 2. Extract the User IDs involved in these SOS calls
+    const userIds = sosData.map((s) => s.user_id);
+
+    // 3. Fetch Emergency Contacts for these specific User IDs
+    const { data: contactsData, error: contactsError } = await supabase
+      .from("emergency_contacts")
+      .select("*")
+      .in("user_id", userIds);
+
+    if (contactsError) {
+      throw new Error(contactsError.message);
+    }
+
+    // 4. Merge the contacts into the SOS objects
+    const combinedData = sosData.map((sos) => {
+      // Find all contacts belonging to this SOS's user
+      const userContacts = contactsData.filter(
+        (c) => c.user_id === sos.user_id
+      );
+
+      return {
+        ...sos,
+        emergency_contacts: userContacts,
+      };
+    });
+    return combinedData as SOSRequest[];
+  },
+
+  async updateSOSStatus(id: string, newStatus: "processing" | "attended") {
+    const { error } = await supabase
+      .from("SOS")
+      .update({ estado: newStatus })
+      .eq("id", id);
+
+    if (error) {
+      throw new Error(error.message);
     }
   },
 };

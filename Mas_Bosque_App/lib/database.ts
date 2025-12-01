@@ -126,7 +126,7 @@ export const initDatabase = async () => {
 export const saveUserDataLocally = async (profile: any, contact: any) => {
   await db.runAsync(
     `INSERT OR REPLACE INTO user_profile (id, first_name, last_name, blood_type, allergies, medical_conditions, medications, role) 
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       profile.id,
       profile.first_name,

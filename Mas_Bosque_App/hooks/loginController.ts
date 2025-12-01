@@ -61,7 +61,8 @@ export default function useLoginController() {
       return;
     } catch (e: any) {
       Logger.error("Login failed", e, { email });
-      setError(e);
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
