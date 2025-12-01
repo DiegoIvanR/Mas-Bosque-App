@@ -7,16 +7,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function RescuerView() {
-  const {
-    sosList,
-    loading,
-    location,
-    selectedSOS,
-    handleMarkerPress,
-    handleCloseModal,
-    handleUpdateStatus,
-    refreshData,
-  } = useRescuerController();
+  const { sosList, loading, location, handleMarkerPress, refreshData } =
+    useRescuerController();
 
   return (
     <View style={styles.container}>
@@ -29,11 +21,6 @@ export default function RescuerView() {
 
       {/* Floating Refresh Button */}
       <SafeAreaView style={styles.refreshContainer} pointerEvents="box-none">
-        <View style={styles.topBar}>
-          <Text style={styles.headerTitle}>Active SOS Signals</Text>
-          {loading && <ActivityIndicator size="small" color="#fff" />}
-        </View>
-
         <View style={styles.rightControls}>
           <Ionicons
             name="refresh-circle"
@@ -44,15 +31,6 @@ export default function RescuerView() {
           />
         </View>
       </SafeAreaView>
-
-      {/* Detail Overlay */}
-      {selectedSOS && (
-        <SOSDetailCard
-          sos={selectedSOS}
-          onClose={handleCloseModal}
-          onUpdateStatus={handleUpdateStatus}
-        />
-      )}
     </View>
   );
 }
@@ -70,7 +48,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "rgba(0,22,11, 0.6)",
     gap: 10,
   },
   headerTitle: {
@@ -80,9 +57,9 @@ const styles = StyleSheet.create({
     fontFamily: "Lato-Bold",
   },
   rightControls: {
-    alignItems: "flex-end",
-    padding: 20,
-    marginBottom: 20, // push up if needed
+    position: "absolute",
+    bottom: 20,
+    right: 20,
   },
   shadow: {
     shadowColor: "#000",

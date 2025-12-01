@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "expo-router"; // Import Router
 import { SOSModel, SOSRequest } from "@/models/SOSModel";
 import * as Location from "expo-location";
 
 export function useRescuerController() {
+  const router = useRouter(); // Initialize Router
   const [sosList, setSosList] = useState<SOSRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSOS, setSelectedSOS] = useState<SOSRequest | null>(null);
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
@@ -36,45 +37,32 @@ export function useRescuerController() {
   useEffect(() => {
     loadData();
     getCurrentLocation();
-
-    // Optional: Set up an interval to refresh data every 30 seconds
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
   }, []);
 
   const handleMarkerPress = (sos: SOSRequest) => {
-    setSelectedSOS(sos);
+    // This triggers the smooth modal transition
+    router.push({
+      pathname: "/sos-detail",
+      params: { id: sos.id },
+    });
   };
 
-  const handleCloseModal = () => {
+  /*const handleCloseModal = () => {
     setSelectedSOS(null);
-  };
+  };*/
 
   const handleUpdateStatus = async (
     id: string,
     newStatus: "processing" | "attended"
   ) => {
     try {
-      setLoading(true);
       await SOSModel.updateSOSStatus(id, newStatus);
-
-      // Close modal if it becomes 'attended' (removed from map)
-      if (newStatus === "attended") {
-        setSelectedSOS(null);
-      } else {
-        // If changing to processing, update the local selected object so UI updates immediately
-        setSelectedSOS((prev) =>
-          prev ? { ...prev, estado: newStatus } : null
-        );
-      }
-
-      // Refresh the map data to remove the pin or change color
-      await loadData();
+      await loadData(); // Refresh list in background
     } catch (error) {
       console.error("Error updating status:", error);
       alert("Failed to update status");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -82,10 +70,8 @@ export function useRescuerController() {
     sosList,
     loading,
     location,
-    selectedSOS,
     refreshData: loadData,
     handleMarkerPress,
-    handleCloseModal,
     handleUpdateStatus,
   };
 }

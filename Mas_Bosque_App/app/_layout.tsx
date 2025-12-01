@@ -79,6 +79,14 @@ export default function RootLayout() {
               headerShown: false,
             }}
           />
+          <Stack.Screen
+            name="sos-detail"
+            options={{
+              presentation: "modal", // This enables the slide-up animation
+              headerShown: false,
+              contentStyle: { backgroundColor: "transparent" }, // Optional transparency
+            }}
+          />
         </Stack>
       </GestureHandlerRootView>
     </AuthProvider>

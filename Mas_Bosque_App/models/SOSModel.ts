@@ -139,4 +139,43 @@ export const SOSModel = {
       throw new Error(error.message);
     }
   },
+
+  // in models/SOSModel.ts
+
+  async fetchSOSById(id: string): Promise<SOSRequest | null> {
+    // 1. Fetch SOS and User Profile ONLY (Remove emergency_contacts from here)
+    const { data, error } = await supabase
+      .from("SOS")
+      .select(
+        `
+      *,
+      user_profile (*)
+    `
+      )
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.log("Error fetching SOS:", error.message);
+      return null;
+    }
+
+    if (!data) return null;
+
+    // 2. Manually fetch contacts using the user_id we just got
+    const { data: contacts, error: contactsError } = await supabase
+      .from("emergency_contacts")
+      .select("*")
+      .eq("user_id", data.user_id);
+
+    if (contactsError) {
+      console.log("Error fetching contacts:", contactsError.message);
+    }
+
+    // 3. Return the combined object
+    return {
+      ...data,
+      emergency_contacts: contacts || [],
+    } as SOSRequest;
+  },
 };
