@@ -1,40 +1,45 @@
-import { useState, useEffect } from "react";
-import { router } from "expo-router";
-import { updateRouteSaveStatus, RoutePreview } from "@/models/routeCardModel";
+import {useState, useEffect} from "react";
+import {router} from "expo-router";
+import {updateRouteSaveStatus, RoutePreview} from "@/models/routeCardModel";
 import Logger from "@/utils/Logger"; // Import Logger
 
 export function useRouteCardController(route: RoutePreview) {
-  const [isSaved, setIsSaved] = useState(route.saved || false);
+    const [isSaved, setIsSaved] = useState(route.saved || false);
 
-  // Sync UI state when parent re-fetches data
-  useEffect(() => {
-    setIsSaved(route.saved || false);
-  }, [route.saved]);
+    // Sync UI state when parent re-fetches data
+    useEffect(() => {
+        setIsSaved(route.saved || false);
+    }, [route.saved]);
 
-  const onPressCard = () => {
-    if (!route.id) {
-      Logger.error("Route ID is missing on card press", null, {
-        routeName: route.name,
-      });
-      return;
-    }
-    Logger.log("Navigating to route details", { routeId: route.id });
-    router.push(`/route/${route.id}`);
-  };
+    const onPressCard = () => {
+        if (!route.id || !/^[a-zA-Z0-9_-]+$/.test(route.id)) {
+            Logger.error("Invalid route ID", null, {routeName: route.name});
+            return;
+        }
 
-  const onToggleSave = (e: any) => {
-    e.stopPropagation();
 
-    const newState = !isSaved;
-    setIsSaved(newState);
+        Logger.log("Navigating to route details", {routeId: route.id});
+        router.push(`/route/${route.id}`);
+    };
 
-    Logger.log(`Toggling save status`, { routeId: route.id, newState });
-    updateRouteSaveStatus(route.id, newState);
-  };
+    const onToggleSave = (e: any) => {
+        e.stopPropagation();
 
-  return {
-    isSaved,
-    onPressCard,
-    onToggleSave,
-  };
+        const newState = !isSaved;
+        setIsSaved(newState);
+
+        if (!route.id) {
+            Logger.warn("No Route ID");
+            return;
+        }
+
+        Logger.log(`Toggling save status`, {routeId: route.id, newState});
+        updateRouteSaveStatus(route.id, newState);
+    };
+
+    return {
+        isSaved,
+        onPressCard,
+        onToggleSave,
+    };
 }
